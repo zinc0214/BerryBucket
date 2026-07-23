@@ -96,7 +96,7 @@ data class TogetherMember(
     val goalCount: Int,
     val userCount: Int
 ) {
-    fun isSucceed() = goalCount == userCount
+    fun isSucceed() = goalCount > 0 && userCount >= goalCount
 }
 
 data class CommentMentionInfo(

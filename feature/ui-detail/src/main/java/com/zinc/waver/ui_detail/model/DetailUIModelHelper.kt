@@ -52,14 +52,6 @@ fun bucketDetailResponseToUiModel(
     )
 
     val togetherInfo = bucketInfo.friendUsers?.takeIf { it.isNotEmpty() }?.let { friends ->
-        val writerMember = TogetherMember(
-            memberId = writerId.orEmpty(),
-            profileImage = profileInfo.imgUrl.orEmpty(),
-            nickName = profileInfo.name,
-            isMine = isMine,
-            goalCount = bucketInfo.goalCount,
-            userCount = bucketInfo.userCount
-        )
         val friendMembers = friends.map { friend ->
             TogetherMember(
                 memberId = friend.id,
@@ -70,10 +62,9 @@ fun bucketDetailResponseToUiModel(
                 userCount = friend.userCount
             )
         }
-        val members = listOf(writerMember) + friendMembers
         TogetherInfo(
-            count = members.size.toString(),
-            togetherMembers = members
+            count = friendMembers.size.toString(),
+            togetherMembers = friendMembers
         )
     }
 
@@ -115,7 +106,7 @@ fun BucketDetailUiInfo.toUpdateUiModel(
     options = getOptions(imagesList),
     writeOpenType = this.writeOpenType,
     keyWord = this.descInfo.keywordList.orEmpty(),
-    tagFriends = this.togetherInfo?.togetherMembers?.filterNot { it.isMine }?.map {
+    tagFriends = this.togetherInfo?.togetherMembers?.map {
         WriteFriend(
             id = it.memberId, imageUrl = it.profileImage, nickname = it.nickName
         )
