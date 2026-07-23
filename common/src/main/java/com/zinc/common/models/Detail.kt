@@ -43,7 +43,10 @@ data class DetailInfo(
     @Serializable
     data class FriendUser(
         val id: String,
-        val name: String
+        val name: String,
+        val imgUrl: String? = null,
+        val goalCount: Int = 0,
+        val userCount: Int = 0
     )
 
     @Serializable

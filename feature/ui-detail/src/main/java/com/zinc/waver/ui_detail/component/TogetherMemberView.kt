@@ -27,6 +27,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import coil.compose.rememberAsyncImagePainter
 import com.zinc.waver.model.TogetherInfo
 import com.zinc.waver.model.TogetherMember
 import com.zinc.waver.ui.design.theme.Gray1
@@ -126,7 +127,10 @@ private fun TogetherMemberItemView(
                 modifier = Modifier.size(50.dp),
                 content = {
                     Image(
-                        painter = painterResource(id = R.drawable.profile_placeholder),
+                        painter = rememberAsyncImagePainter(
+                            model = togetherMember.profileImage,
+                            error = painterResource(id = R.drawable.profile_placeholder)
+                        ),
                         contentDescription = stringResource(
                             id = R.string.profileImgDesc
                         ),

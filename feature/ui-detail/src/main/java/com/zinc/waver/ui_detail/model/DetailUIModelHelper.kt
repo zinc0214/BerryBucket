@@ -8,6 +8,8 @@ import com.zinc.waver.model.BucketDetailUiInfo
 import com.zinc.waver.model.Comment
 import com.zinc.waver.model.DetailDescType
 import com.zinc.waver.model.LoadedImageInfo
+import com.zinc.waver.model.TogetherInfo
+import com.zinc.waver.model.TogetherMember
 import com.zinc.waver.model.WriteCategoryInfo
 import com.zinc.waver.model.WriteFriend
 import com.zinc.waver.model.WriteKeyWord
@@ -49,6 +51,32 @@ fun bucketDetailResponseToUiModel(
         isMine = isMine
     )
 
+    val togetherInfo = bucketInfo.friendUsers?.takeIf { it.isNotEmpty() }?.let { friends ->
+        val writerMember = TogetherMember(
+            memberId = writerId.orEmpty(),
+            profileImage = profileInfo.imgUrl.orEmpty(),
+            nickName = profileInfo.name,
+            isMine = isMine,
+            goalCount = bucketInfo.goalCount,
+            userCount = bucketInfo.userCount
+        )
+        val friendMembers = friends.map { friend ->
+            TogetherMember(
+                memberId = friend.id,
+                profileImage = friend.imgUrl.orEmpty(),
+                nickName = friend.name,
+                isMine = false,
+                goalCount = friend.goalCount,
+                userCount = friend.userCount
+            )
+        }
+        val members = listOf(writerMember) + friendMembers
+        TogetherInfo(
+            count = members.size.toString(),
+            togetherMembers = members
+        )
+    }
+
     val commentInfo = bucketInfo.comment?.let {
         DetailDescType.CommentInfo(it.size, it.map { comment ->
             Comment(
@@ -71,7 +99,7 @@ fun bucketDetailResponseToUiModel(
         descInfo = descInfo,
         memoInfo = if (bucketInfo.memo.isNullOrEmpty()) null else DetailDescType.MemoInfo(bucketInfo.memo!!),
         commentInfo = commentInfo,
-        togetherInfo = null,
+        togetherInfo = togetherInfo,
         isMine = isMine,
         isDone = bucketInfo.status == DetailInfo.CompleteStatus.COMPLETE,
         isLike = bucketInfo.isLike.isYes()
@@ -87,7 +115,7 @@ fun BucketDetailUiInfo.toUpdateUiModel(
     options = getOptions(imagesList),
     writeOpenType = this.writeOpenType,
     keyWord = this.descInfo.keywordList.orEmpty(),
-    tagFriends = this.togetherInfo?.togetherMembers?.map {
+    tagFriends = this.togetherInfo?.togetherMembers?.filterNot { it.isMine }?.map {
         WriteFriend(
             id = it.memberId, imageUrl = it.profileImage, nickname = it.nickName
         )
