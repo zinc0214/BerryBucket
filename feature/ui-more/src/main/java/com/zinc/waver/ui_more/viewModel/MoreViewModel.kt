@@ -4,10 +4,12 @@ import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
+import com.zinc.common.models.ProfileInfo
 import com.zinc.common.utils.TAG
 import com.zinc.datastore.login.PreferenceDataStoreModule
 import com.zinc.domain.models.UpdateProfileRequest
 import com.zinc.domain.usecases.more.CheckAlreadyUsedNickname
+import com.zinc.domain.usecases.more.CheckUserLimit
 import com.zinc.domain.usecases.more.LoadProfileInfo
 import com.zinc.domain.usecases.more.UpdateProfileInfo
 import com.zinc.waver.ui.viewmodel.CommonViewModel
@@ -25,6 +27,7 @@ class MoreViewModel @Inject constructor(
     private val loadProfileInfo: LoadProfileInfo,
     private val updateProfileInfo: UpdateProfileInfo,
     private val checkAlreadyUsedNickname: CheckAlreadyUsedNickname,
+    private val checkUserLimit: CheckUserLimit,
     private val preferenceDataStoreModule: PreferenceDataStoreModule,
 ) : CommonViewModel() {
 
@@ -97,10 +100,10 @@ class MoreViewModel @Inject constructor(
     }
 
     fun checkHasWaverPlus() {
-        viewModelScope.launch {
-            preferenceDataStoreModule.loadHasWaverPlus.collectLatest { value ->
-                _hasWaverPlus.value = value
-            }
+        viewModelScope.launch(ceh(_hasWaverPlus, false)) {
+            val response = checkUserLimit.invoke()
+            _hasWaverPlus.value =
+                response.success && response.data.premiumStatus == ProfileInfo.PremiumStatus.ACTIVE
         }
     }
 
