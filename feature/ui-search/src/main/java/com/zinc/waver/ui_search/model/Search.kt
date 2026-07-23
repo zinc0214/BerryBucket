@@ -63,7 +63,7 @@ fun SearchPopularAndRecommendResponse.RecommendData.parseUI(userId: String): Rec
     val items = listOf(
         popularItems,
         recommendItems
-    )
+    ).filter { it.items.isNotEmpty() }
 
     return RecommendList(items = items)
 }
