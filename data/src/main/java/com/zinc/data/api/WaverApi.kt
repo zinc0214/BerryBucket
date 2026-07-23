@@ -7,6 +7,7 @@ import com.zinc.common.models.AllBucketListResponse
 import com.zinc.common.models.AllBucketListSortType
 import com.zinc.common.models.BucketDetailResponse
 import com.zinc.common.models.BucketStatus
+import com.zinc.common.models.CheckUserLimitResponse
 import com.zinc.common.models.CheckUserStatusRequest
 import com.zinc.common.models.CheckUserStatusResponse
 import com.zinc.common.models.CommonResponse
@@ -336,5 +337,9 @@ interface WaverApi {
     suspend fun startSubscription(
         @Body request: SubscriptionStartRequest
     ): CommonResponse
+
+    // 웨이버 플러스 구독 상태 / 무료 혜택 한도 확인
+    @GET("/waver/user/check/limit")
+    suspend fun checkUserLimit(): CheckUserLimitResponse
 
 }

@@ -1,5 +1,6 @@
 package com.zinc.domain.repository
 
+import com.zinc.common.models.CheckUserLimitResponse
 import com.zinc.common.models.CommonResponse
 import com.zinc.common.models.CommonResponse2
 import com.zinc.common.models.LoadMyWaveBadgeResponse
@@ -17,4 +18,5 @@ interface MoreRepository {
     suspend fun requestWithdrawal(): CommonResponse
     suspend fun updateMyBadge(badgeId: Int): CommonResponse
     suspend fun startSubscription(request: SubscriptionStartRequest): CommonResponse
+    suspend fun checkUserLimit(): CheckUserLimitResponse
 }

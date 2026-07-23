@@ -1,5 +1,6 @@
 package com.zinc.data.repository
 
+import com.zinc.common.models.CheckUserLimitResponse
 import com.zinc.common.models.CommonResponse
 import com.zinc.common.models.CommonResponse2
 import com.zinc.common.models.LoadMyWaveBadgeResponse
@@ -57,5 +58,9 @@ internal class MoreRepositoryImpl @Inject constructor(
 
     override suspend fun startSubscription(request: SubscriptionStartRequest): CommonResponse {
         return waverApi.startSubscription(request)
+    }
+
+    override suspend fun checkUserLimit(): CheckUserLimitResponse {
+        return waverApi.checkUserLimit()
     }
 }
