@@ -29,6 +29,7 @@ import com.zinc.waver.ui_more.screen.ProfileSettingScreen
 import com.zinc.waver.ui_my.BottomSheetScreenType
 import com.zinc.waver.ui_my.MyScreen
 import com.zinc.waver.ui_my.SearchBottomView
+import com.zinc.waver.ui_my.model.AlarmClickEvent
 import com.zinc.waver.ui_my.model.MyTopEvent
 import com.zinc.waver.ui_my.screen.alarm.AlarmScreen
 import com.zinc.waver.ui_my.screen.all.StatusBucketListScreen
@@ -317,12 +318,16 @@ internal fun NavGraphBuilder.writeNavGraph(
 }
 
 internal fun NavGraphBuilder.alarmNavGraph(
-    backPress: () -> Unit
+    backPress: () -> Unit,
+    alarmClicked: (AlarmClickEvent, NavBackStackEntry) -> Unit
 ) {
-    composable(AlarmDestinations.GO_TO_ALARM) {
-        AlarmScreen {
-            backPress()
-        }
+    composable(AlarmDestinations.GO_TO_ALARM) { entry ->
+        AlarmScreen(
+            onBackPressed = backPress,
+            alarmClicked = { event ->
+                alarmClicked(event, entry)
+            }
+        )
     }
 }
 

@@ -34,6 +34,7 @@ import com.zinc.waver.ui_more.models.MoreItemType.LOGOUT
 import com.zinc.waver.ui_more.models.MoreItemType.PROFILE
 import com.zinc.waver.ui_more.models.MoreItemType.WAVE_PLUS
 import com.zinc.waver.ui_my.BottomSheetScreenType
+import com.zinc.waver.ui_my.model.AlarmClickEvent
 import com.zinc.waver.ui_my.model.MyTopEvent
 import com.zinc.waver.ui_other.model.OtherHomeEvent
 import com.zinc.waver.ui_search.model.SearchGoToEvent
@@ -321,7 +322,24 @@ private fun NavGraphBuilder.setupMoreScreens(
     appState: WaverAppState,
     action: (ActionWithActivity) -> Unit
 ) {
-    alarmNavGraph(backPress = appState::backPress)
+    alarmNavGraph(
+        backPress = appState::backPress,
+        alarmClicked = { event, nav ->
+            when (event) {
+                is AlarmClickEvent.GoToBucketDetail -> {
+                    appState.navigateToOpenBucketDetail(event.bucketId, "NoId", true, nav)
+                }
+
+                AlarmClickEvent.GoToFollowerList -> {
+                    appState.navigateToFollowerList(nav)
+                }
+
+                AlarmClickEvent.GoToBadgeList -> {
+                    appState.navigateToMyWaveManage(nav)
+                }
+            }
+        }
+    )
     moreAlarmNavGraph(backPress = appState::backPress)
     moreProfileNavGraph(
         backPress = appState::backPress,

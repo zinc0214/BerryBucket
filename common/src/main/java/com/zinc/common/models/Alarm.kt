@@ -18,7 +18,8 @@ data class MyPushList(
 data class PushAlarm(
     val type: PushAlarmType,
     val message: String,
-    val imgUrl: String? = null // FOLLOW 타입인 경우 팔로워의 프로필 이미지 URL
+    val imgUrl: String? = null, // FOLLOW 타입인 경우 팔로워의 프로필 이미지 URL
+    val bucketId: String? = null // LIKE, COMMENT, D_DAY, TOGETHER 타입인 경우 이동할 버킷리스트 ID
 )
 
 enum class PushAlarmType {

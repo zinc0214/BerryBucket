@@ -1,6 +1,7 @@
 package com.zinc.waver.ui_my.screen.alarm
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -28,13 +29,26 @@ import com.zinc.common.models.PushAlarmType.TOGETHER
 import com.zinc.waver.ui.design.theme.Gray9
 import com.zinc.waver.ui.util.HtmlText
 import com.zinc.waver.ui_my.R
+import com.zinc.waver.ui_my.model.AlarmClickEvent
 import com.zinc.waver.ui_common.R as CommonR
 
 @Composable
-fun AlarmItemView(alarmItem: PushAlarm) {
+fun AlarmItemView(
+    alarmItem: PushAlarm,
+    onClicked: (AlarmClickEvent) -> Unit
+) {
+    val clickEvent = getClickEvent(alarmItem)
 
     Row(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .then(
+                if (clickEvent != null) {
+                    Modifier.clickable { onClicked(clickEvent) }
+                } else {
+                    Modifier
+                }
+            ),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Image(
@@ -60,6 +74,14 @@ fun AlarmItemView(alarmItem: PushAlarm) {
     }
 }
 
+// 타입별 클릭 이벤트, null 이면 클릭 불가
+private fun getClickEvent(alarmItem: PushAlarm): AlarmClickEvent? = when (alarmItem.type) {
+    LIKE, COMMENT, D_DAY, TOGETHER -> alarmItem.bucketId?.let { AlarmClickEvent.GoToBucketDetail(it) }
+    FOLLOW -> AlarmClickEvent.GoToFollowerList
+    BADGE -> AlarmClickEvent.GoToBadgeList
+    NOTICE, EVENT -> null
+}
+
 private fun getAlarmIcon(type: PushAlarmType) = when (type) {
     LIKE -> R.drawable.btn_32_like_on
     COMMENT -> R.drawable.btn_32_coment_alarm
@@ -79,6 +101,7 @@ private fun AlarmItemPreview() {
             type = COMMENT,
             message = "맹꽁이 좋아요 님이 둥가둥가",
             imgUrl = null
-        )
+        ),
+        onClicked = {}
     )
 }

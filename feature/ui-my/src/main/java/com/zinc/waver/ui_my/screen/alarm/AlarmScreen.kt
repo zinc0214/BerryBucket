@@ -16,10 +16,14 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import com.zinc.waver.ui_my.model.AlarmClickEvent
 import com.zinc.waver.ui_my.viewModel.AlarmViewModel
 
 @Composable
-fun AlarmScreen(onBackPressed: () -> Unit) {
+fun AlarmScreen(
+    onBackPressed: () -> Unit,
+    alarmClicked: (AlarmClickEvent) -> Unit
+) {
     val viewModel: AlarmViewModel = hiltViewModel()
     val alarmList by viewModel.alarmList.observeAsState()
 
@@ -45,7 +49,10 @@ fun AlarmScreen(onBackPressed: () -> Unit) {
                 itemsIndexed(items = alarmList,
                     key = { index, item -> "${item.type}_${item.message}_$index" },
                     itemContent = { _, item ->
-                        AlarmItemView(alarmItem = item)
+                        AlarmItemView(
+                            alarmItem = item,
+                            onClicked = alarmClicked
+                        )
                     })
             }
         }
