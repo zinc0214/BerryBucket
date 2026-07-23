@@ -47,6 +47,8 @@ import com.zinc.waver.ui.presentation.component.MyTextField
 import com.zinc.waver.ui.util.dpToSp
 import com.zinc.waver.ui_common.R as CommonR
 
+private const val DEFAULT_GOAL_COUNT = "2"
+
 @Composable
 fun GoalCountBottomScreen(
     originCount: String = "",
@@ -135,7 +137,7 @@ fun GoalCountBottomScreen(
                     if (editedGoalCount.text.isEmpty()) {
                         MyText(
                             modifier = Modifier.fillMaxWidth(),
-                            text = "2",
+                            text = DEFAULT_GOAL_COUNT,
                             color = if (disableState) Gray7 else Gray10,
                             fontSize = dpToSp(22.dp),
                             textAlign = TextAlign.Center,
@@ -156,7 +158,8 @@ fun GoalCountBottomScreen(
                 canceled()
             },
             positiveEvent = {
-                val goalCount = editedGoalCount.text.toIntOrNull()
+                val goalCount =
+                    editedGoalCount.text.ifEmpty { DEFAULT_GOAL_COUNT }.toIntOrNull()
                 if (goalCount == null || goalCount < 2) {
                     Toast.makeText(
                         context,
@@ -164,7 +167,7 @@ fun GoalCountBottomScreen(
                         Toast.LENGTH_SHORT
                     ).show()
                 } else {
-                    confirmed(editedGoalCount.text)
+                    confirmed(goalCount.toString())
                 }
             })
     }
