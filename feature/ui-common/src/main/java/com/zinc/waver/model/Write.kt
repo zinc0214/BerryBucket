@@ -155,8 +155,8 @@ interface WriteOptionsType2 {
 
     object OPEN : WriteOptionsType2
 
-    fun getFriendsEnableType(hasWaver: Boolean) =
-        if (hasWaver) Enable
+    fun getFriendsEnableType(canUse: Boolean) =
+        if (canUse) Enable
         else NoWaverPlus
 }
 

@@ -6,12 +6,13 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.zinc.common.models.AddBucketListRequest
 import com.zinc.common.models.DetailInfo
+import com.zinc.common.models.UserLimitInfo
 import com.zinc.common.models.YesOrNo
-import com.zinc.datastore.login.PreferenceDataStoreModule
 import com.zinc.domain.usecases.category.LoadCategoryList
 import com.zinc.domain.usecases.detail.LoadBucketDetail
 import com.zinc.domain.usecases.detail.LoadFriends
 import com.zinc.domain.usecases.keyword.LoadKeyWord
+import com.zinc.domain.usecases.more.CheckUserLimit
 import com.zinc.domain.usecases.write.AddNewBucketList
 import com.zinc.waver.model.UIAddBucketListInfo
 import com.zinc.waver.model.WriteFriend
@@ -21,7 +22,6 @@ import com.zinc.waver.model.toUiModel
 import com.zinc.waver.ui.viewmodel.CommonViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineExceptionHandler
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -32,7 +32,7 @@ class WriteBucketListViewModel @Inject constructor(
     private val loadKeyWord: LoadKeyWord,
     private val loadFriends: LoadFriends,
     private val loadCategoryList: LoadCategoryList,
-    private val preferenceDataStoreModule: PreferenceDataStoreModule,
+    private val checkUserLimitUseCase: CheckUserLimit,
 ) : CommonViewModel() {
 
     private val _savedWriteData = MutableLiveData<WriteTotalInfo>()
@@ -53,8 +53,8 @@ class WriteBucketListViewModel @Inject constructor(
     private val _loadFail = MutableLiveData<Pair<String, String>?>()
     val loadFail: LiveData<Pair<String, String>?> get() = _loadFail
 
-    private val _hasWaverPlus = MutableLiveData<Boolean>()
-    val hasWaverPlus: LiveData<Boolean> get() = _hasWaverPlus
+    private val _userLimitInfo = MutableLiveData<UserLimitInfo>()
+    val userLimitInfo: LiveData<UserLimitInfo> get() = _userLimitInfo
 
     private val _defaultCategoryId = MutableLiveData<Int>()
 
@@ -166,10 +166,13 @@ class WriteBucketListViewModel @Inject constructor(
         }
     }
 
-    fun checkHasWaverPlus() {
-        viewModelScope.launch {
-            preferenceDataStoreModule.loadHasWaverPlus.collectLatest { value ->
-                _hasWaverPlus.value = value
+    fun checkUserLimit() {
+        viewModelScope.launch(ceh(_userLimitInfo, UserLimitInfo.NONE)) {
+            val response = checkUserLimitUseCase.invoke()
+            _userLimitInfo.value = if (response.success) {
+                response.data
+            } else {
+                UserLimitInfo.NONE
             }
         }
     }

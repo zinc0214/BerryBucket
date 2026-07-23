@@ -90,9 +90,9 @@ fun WriteScreen1(
     val isKeyboardStatus by keyboardAsState()
     val focusManager = LocalFocusManager.current
     val keyboardController = LocalSoftwareKeyboardController.current
-    val hasWaverPlusAsState by viewModel.hasWaverPlus.observeAsState()
+    val userLimitInfoAsState by viewModel.userLimitInfo.observeAsState()
 
-    var hasWaverPlus by remember { mutableStateOf(false) }
+    var canUseImage by remember { mutableStateOf(false) }
 
     // 지금 선택된 option
     var selectedOption: WriteOptionsType1? by remember { mutableStateOf(null) }
@@ -126,7 +126,7 @@ fun WriteScreen1(
     }
 
     LaunchedEffect(Unit, showWaverPlus.value) {
-        viewModel.checkHasWaverPlus()
+        viewModel.checkUserLimit()
         viewModel.loadCategory()
     }
 
@@ -143,8 +143,8 @@ fun WriteScreen1(
         }
     }
 
-    LaunchedEffect(hasWaverPlusAsState) {
-        hasWaverPlus = hasWaverPlusAsState ?: false
+    LaunchedEffect(userLimitInfoAsState) {
+        canUseImage = userLimitInfoAsState?.canUseImage ?: false
     }
 
 
@@ -445,8 +445,8 @@ fun WriteScreen1(
                                         })
 
                                     if (imageList.value.isNotEmpty() && imageList.value.size < 3 && it == imageList.value.last()) {
-                                        AddImageItem(hasWaverPlus = hasWaverPlus) {
-                                            if (hasWaverPlus) {
+                                        AddImageItem(canUseImage = canUseImage) {
+                                            if (canUseImage) {
                                                 selectedOption = IMAGE
                                             } else {
                                                 showWaverPlus.value = true

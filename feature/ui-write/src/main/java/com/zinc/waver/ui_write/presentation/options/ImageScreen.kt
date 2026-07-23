@@ -86,10 +86,10 @@ fun ImageItem(
 
 @Composable
 fun AddImageItem(
-    hasWaverPlus: Boolean,
+    canUseImage: Boolean,
     addButtonClicked: () -> Unit
 ) {
-    val borderColor = if (hasWaverPlus) Gray3 else Main4
+    val borderColor = if (canUseImage) Gray3 else Main4
 
     Box(
         modifier = Modifier
@@ -109,7 +109,7 @@ fun AddImageItem(
             modifier = Modifier.align(Alignment.Center)
         )
 
-        if (!hasWaverPlus) {
+        if (!canUseImage) {
             Image(
                 modifier = Modifier
                     .size(width = 67.dp, height = 32.dp)
@@ -124,7 +124,7 @@ fun AddImageItem(
 @Preview
 @Composable
 private fun AddImageItemPreview() {
-    AddImageItem(hasWaverPlus = false) {
+    AddImageItem(canUseImage = false) {
 
     }
 }

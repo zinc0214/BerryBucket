@@ -73,7 +73,7 @@ fun WriteScreen2(
     val originFriendsAsState by viewModel.searchFriendsResult.observeAsState()
     val loadFailAsState by viewModel.loadFail.observeAsState()
     val addNewBucketListResult by viewModel.addNewBucketListResult.observeAsState()
-    val hasWaverPlusAsState by viewModel.hasWaverPlus.observeAsState()
+    val userLimitInfoAsState by viewModel.userLimitInfo.observeAsState()
 
     val selectedKeyWords = remember { mutableStateOf(writeTotalInfo.keyWord) }
     val selectedFriends = remember { mutableStateOf(writeTotalInfo.tagFriends) }
@@ -82,13 +82,13 @@ fun WriteScreen2(
     val keyWordList = remember { mutableStateOf(originKeyWords) }
     val originFriendList = remember { mutableStateOf(originFriendsAsState) }
     val showApiFailDialog = remember { mutableStateOf(false) }
-    var hasWaverPlus by remember { mutableStateOf(false) }
+    var canUseTogether by remember { mutableStateOf(false) }
     val showWaverPlus = remember { mutableStateOf(false) }
     var friendOption =
-        remember { mutableStateOf(FRIENDS(enableType = getFriendsEnableType(hasWaverPlus))) }
+        remember { mutableStateOf(FRIENDS(enableType = getFriendsEnableType(canUseTogether))) }
 
     LaunchedEffect(Unit, showWaverPlus.value) {
-        viewModel.checkHasWaverPlus()
+        viewModel.checkUserLimit()
     }
 
     LaunchedEffect(originKeyWords) {
@@ -118,10 +118,10 @@ fun WriteScreen2(
         }
     }
 
-    LaunchedEffect(hasWaverPlusAsState) {
-        hasWaverPlus = hasWaverPlusAsState ?: false
-        friendOption.value = FRIENDS(enableType = getFriendsEnableType(hasWaverPlus))
-        Log.e("ayhan", "hasWaverPlus : $hasWaverPlus, friendOption : $friendOption")
+    LaunchedEffect(userLimitInfoAsState) {
+        canUseTogether = userLimitInfoAsState?.canUseTogether ?: false
+        friendOption.value = FRIENDS(enableType = getFriendsEnableType(canUseTogether))
+        Log.e("ayhan", "canUseTogether : $canUseTogether, friendOption : $friendOption")
     }
 
     BackHandler(enabled = true) { // <-----
