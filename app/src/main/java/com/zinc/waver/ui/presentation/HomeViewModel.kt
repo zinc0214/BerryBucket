@@ -3,11 +3,10 @@ package com.zinc.waver.ui.presentation
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.viewModelScope
-import com.zinc.common.models.ProfileInfo
 import com.zinc.datastore.login.PreferenceDataStoreModule
 import com.zinc.domain.models.BillingCycle
 import com.zinc.domain.models.SubscriptionStartRequest
-import com.zinc.domain.usecases.detail.LoadProfileInfo
+import com.zinc.domain.usecases.more.CheckUserLimit
 import com.zinc.domain.usecases.more.StartSubscription
 import com.zinc.waver.ui.viewmodel.CommonViewModel
 import com.zinc.waver.util.SingleLiveEvent
@@ -18,7 +17,7 @@ import javax.inject.Inject
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val preferenceDataStoreModule: PreferenceDataStoreModule,
-    private val loadProfileInfo: LoadProfileInfo,
+    private val checkUserLimitUseCase: CheckUserLimit,
     private val startSubscription: StartSubscription
 ) : CommonViewModel() {
     private val _logoutSucceed = SingleLiveEvent<Boolean>()
@@ -36,38 +35,25 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    fun loadProfileInfo() {
+    // 로그인/앱 시작 시 구독 상태 확인 (판단은 각 화면에서 API 호출로 수행)
+    fun checkUserLimit() {
         viewModelScope.launch(ceh(_doNothing, null)) {
-            val response = loadProfileInfo.invoke(true, null)
-            if (response.success) {
-                Log.e("ayhan", "loadProfileInfo: ${response.data}")
-                val isWaverUser = response.data.premiumStatus == ProfileInfo.PremiumStatus.ACTIVE
-                updateWaverPlus(isWaverUser)
-            }
-        }
-    }
-
-    fun updateWaverPlus(purchased: Boolean) {
-        viewModelScope.launch {
-            preferenceDataStoreModule.setHasWaverPlus(purchased)
+            val response = checkUserLimitUseCase.invoke()
+            Log.d("HomeViewModel", "checkUserLimit: ${response.data}")
         }
     }
 
     // 구독 완료(구매/앱 시작 시 활성 구독 감지) 시 서버에 구독 시작을 알린다.
     // 앱 시작 시 YEAR/MONTH 두 설정이 같은 구매를 매칭하므로, 세션당 같은 subscribeId는 한 번만 전송한다.
-    // 서버에 전송이 성공하면 그 결과를 DataStore(hasWaverPlus)에도 반영한다.
     fun notifySubscriptionStarted(billingCycle: BillingCycle, subscribeId: String) {
         if (!notifiedSubscribeIds.add(subscribeId)) return
         viewModelScope.launch(ceh(_doNothing, null)) {
-            val response = startSubscription(
+            startSubscription(
                 SubscriptionStartRequest(
                     billingCycle = billingCycle,
                     subscribeId = subscribeId
                 )
             )
-            if (response.success) {
-                preferenceDataStoreModule.setHasWaverPlus(true)
-            }
         }
     }
 }

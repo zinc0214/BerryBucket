@@ -3,7 +3,6 @@ package com.zinc.datastore.login
 import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
-import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
@@ -24,7 +23,6 @@ class PreferenceDataStoreModule @Inject constructor(@ApplicationContext context:
     private val loginedEmailKey = stringPreferencesKey("loginedEmailKey")
     private val loginedEmailUidKey = stringPreferencesKey("loginedEmailUidKey")
     private val userIdKey = stringPreferencesKey("userIdKey")
-    private val waverPlusKey = booleanPreferencesKey("waverPlusKey")
 
     val loadAccessToken: Flow<String> = loginDataStore.data
         .map { preferences ->
@@ -86,13 +84,4 @@ class PreferenceDataStoreModule @Inject constructor(@ApplicationContext context:
         }
     }
 
-    val loadHasWaverPlus: Flow<Boolean> = loginDataStore.data.map { preferences ->
-        preferences[waverPlusKey] ?: false
-    }
-
-    suspend fun setHasWaverPlus(hasWaverPlus: Boolean) {
-        loginDataStore.edit { preferences ->
-            preferences[waverPlusKey] = hasWaverPlus
-        }
-    }
 }

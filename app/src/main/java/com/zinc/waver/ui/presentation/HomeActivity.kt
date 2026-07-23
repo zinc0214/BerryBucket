@@ -97,7 +97,7 @@ class HomeActivity : AppCompatActivity(),
         super.onCreate(savedInstanceState)
         MobileAds.initialize(this)
         checkInAppBilling()
-        viewModel.loadProfileInfo()
+        viewModel.checkUserLimit()
 
         requestNotificationPermission()
 
@@ -404,7 +404,7 @@ class HomeActivity : AppCompatActivity(),
             this,
             isForPurchase = isForPurchase,
             subsDone = { subscribeId ->
-                // 서버 전송이 성공하면 그 안에서 hasWaverPlus=true 로 저장한다
+                // 서버에 구독 시작을 알린다
                 viewModel.notifySubscriptionStarted(
                     billingCycle = when (type) {
                         WaverPlusType.YEAR -> BillingCycle.YEARLY
@@ -416,7 +416,7 @@ class HomeActivity : AppCompatActivity(),
             },
             alreadyPurchased = { purchased, subscribeId ->
                 if (purchased && subscribeId != null) {
-                    // 활성 구독 감지 → 서버에 알리고, 성공 시 hasWaverPlus=true 저장 (세션당 1회, best-effort 주기)
+                    // 활성 구독 감지 → 서버에 알림 (세션당 1회, best-effort 주기)
                     viewModel.notifySubscriptionStarted(
                         billingCycle = when (type) {
                             WaverPlusType.YEAR -> BillingCycle.YEARLY
@@ -424,9 +424,6 @@ class HomeActivity : AppCompatActivity(),
                         },
                         subscribeId = subscribeId
                     )
-                } else if (!purchased) {
-                    // 활성 구독 없음 → 플래그 해제 (서버와 무관)
-                    viewModel.updateWaverPlus(false)
                 }
             })
 
