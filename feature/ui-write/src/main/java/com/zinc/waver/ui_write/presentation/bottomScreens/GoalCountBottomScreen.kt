@@ -156,7 +156,8 @@ fun GoalCountBottomScreen(
                 canceled()
             },
             positiveEvent = {
-                if (editedGoalCount.text == "0" || editedGoalCount.text == "1") {
+                val goalCount = editedGoalCount.text.toIntOrNull()
+                if (goalCount == null || goalCount < 2) {
                     Toast.makeText(
                         context,
                         CommonR.string.countIsNotValidToast,

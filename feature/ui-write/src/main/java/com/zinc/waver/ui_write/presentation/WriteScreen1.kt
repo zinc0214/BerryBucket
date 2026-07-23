@@ -325,13 +325,14 @@ fun WriteScreen1(
                                 selectedOption = null
                                 isNeedToBottomSheetOpen.invoke(false)
                             }, confirmed = {
+                                val goalCount = it.toIntOrNull() ?: return@GoalCountBottomScreen
                                 deleteOption(GOAL)
                                 updatedWriteOptions.add(
-                                    WriteOption1Info.GoalCount(it.toInt())
+                                    WriteOption1Info.GoalCount(goalCount)
                                 )
                                 selectedOption = null
                                 isNeedToBottomSheetOpen.invoke(false)
-                                originCount.value = it.toInt()
+                                originCount.value = goalCount
                             })
                         isNeedToBottomSheetOpen.invoke(true)
                     }
