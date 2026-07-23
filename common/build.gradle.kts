@@ -28,4 +28,7 @@ dependencies {
     // Gson
     implementation(libs.google.gson)
     implementation(libs.retrofit.converter.gson)
+
+    // test
+    testImplementation(libs.test.junit)
 }
