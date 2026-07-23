@@ -212,9 +212,17 @@ private fun InternalOpenDetailScreen(
 
     val successButtonVisible by remember {
         derivedStateOf {
-            listScrollState.layoutInfo.visibleItemsInfo
-                .find { it.key == "successButton" }
-                .isSuccessButtonVisible(listScrollState.layoutInfo.viewportSize.height)
+            val layoutInfo = listScrollState.layoutInfo
+            if (layoutInfo.visibleItemsInfo.isEmpty()) {
+                // 첫 레이아웃 전에는 모든 아이템 정보가 비어있어 "고정 버튼이 안 보인다"로 계산되고,
+                // 그 결과 진입 시점에 플로팅 버튼이 잠깐 떴다가 사라진다.
+                // 레이아웃 완료 전에는 고정 버튼이 보이는 것으로 간주해서 플로팅 버튼이 뜨지 않도록 한다.
+                true
+            } else {
+                layoutInfo.visibleItemsInfo
+                    .find { it.key == "successButton" }
+                    .isSuccessButtonVisible(layoutInfo.viewportSize.height)
+            }
         }
     }
 
