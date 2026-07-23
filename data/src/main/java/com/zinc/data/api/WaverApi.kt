@@ -2,7 +2,7 @@ package com.zinc.data.api
 
 import com.zinc.common.models.AddBucketCommentRequest
 import com.zinc.common.models.AddNewCategoryRequest
-import com.zinc.common.models.AlarmList
+import com.zinc.common.models.MyPushResponse
 import com.zinc.common.models.AllBucketListResponse
 import com.zinc.common.models.AllBucketListSortType
 import com.zinc.common.models.BucketDetailResponse
@@ -177,9 +177,9 @@ interface WaverApi {
         @Path("id") id: String
     ): CommonResponse
 
-    //TODO : 실데이터 연결 필요
-    @GET("/waver/alarm")
-    suspend fun loadAlarmList(): AlarmList
+    // 받은 푸시 알림 내역
+    @GET("/waver/my/push")
+    suspend fun loadMyPushList(): MyPushResponse
 
     // 피드, 버킷리스트 생성(수정) 시 키워드 아이템 로드
     @GET("/waver/explore/keywords")

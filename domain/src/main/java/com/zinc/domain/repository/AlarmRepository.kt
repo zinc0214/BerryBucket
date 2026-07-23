@@ -1,7 +1,7 @@
 package com.zinc.domain.repository
 
-import com.zinc.common.models.AlarmList
+import com.zinc.common.models.MyPushResponse
 
 interface AlarmRepository {
-    suspend fun loadAlarmList(): AlarmList
+    suspend fun loadMyPushList(): MyPushResponse
 }
