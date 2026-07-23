@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.zinc.datastore.login.PreferenceDataStoreModule
 import com.zinc.domain.models.BillingCycle
 import com.zinc.domain.models.SubscriptionStartRequest
+import com.zinc.domain.usecases.detail.LoadProfileInfo
 import com.zinc.domain.usecases.more.CheckUserLimit
 import com.zinc.domain.usecases.more.StartSubscription
 import com.zinc.waver.ui.viewmodel.CommonViewModel
@@ -17,6 +18,7 @@ import javax.inject.Inject
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val preferenceDataStoreModule: PreferenceDataStoreModule,
+    private val loadProfileInfo: LoadProfileInfo,
     private val checkUserLimitUseCase: CheckUserLimit,
     private val startSubscription: StartSubscription
 ) : CommonViewModel() {
@@ -32,6 +34,14 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             preferenceDataStoreModule.clearLoginEmail()
             _logoutSucceed.value = true
+        }
+    }
+
+    // 로그인/앱 시작 시 로그인(프로필) 정보 로드 — 구독 여부 판단과는 무관하게 유지
+    fun loadProfileInfo() {
+        viewModelScope.launch(ceh(_doNothing, null)) {
+            val response = loadProfileInfo.invoke(true, null)
+            Log.d("HomeViewModel", "loadProfileInfo: ${response.data}")
         }
     }
 
