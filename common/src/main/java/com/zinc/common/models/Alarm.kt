@@ -4,9 +4,16 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class MyPushResponse(
-    val alarms: List<PushAlarm>
+    val data: MyPushList,
+    val success: Boolean,
+    val code: String,
+    val message: String
 )
 
+@Serializable
+data class MyPushList(
+    val alarms: List<PushAlarm>
+)
 @Serializable
 data class PushAlarm(
     val type: PushAlarmType,

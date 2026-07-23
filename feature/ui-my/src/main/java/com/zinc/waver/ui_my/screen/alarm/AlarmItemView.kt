@@ -28,6 +28,7 @@ import com.zinc.common.models.PushAlarmType.TOGETHER
 import com.zinc.waver.ui.design.theme.Gray9
 import com.zinc.waver.ui.util.HtmlText
 import com.zinc.waver.ui_my.R
+import com.zinc.waver.ui_common.R as CommonR
 
 @Composable
 fun AlarmItemView(alarmItem: PushAlarm) {
@@ -62,9 +63,9 @@ fun AlarmItemView(alarmItem: PushAlarm) {
 private fun getAlarmIcon(type: PushAlarmType) = when (type) {
     LIKE -> R.drawable.btn_32_like_on
     COMMENT -> R.drawable.btn_32_coment_alarm
-    FOLLOW -> R.drawable.btn_32_app_noti // TODO : 팔로우 아이콘 추가 필요
-    BADGE -> R.drawable.btn_32_app_noti // TODO : 뱃지 아이콘 추가 필요
-    TOGETHER -> com.zinc.waver.ui_common.R.drawable.ico_36_together
+    FOLLOW -> R.drawable.btn_32_app_noti
+    BADGE -> R.drawable.btn_32_badge
+    TOGETHER -> CommonR.drawable.ico_36_together
     NOTICE -> R.drawable.btn_32_app_noti
     EVENT -> R.drawable.btn_32_event
     D_DAY -> R.drawable.btn_32_alarm_d_day

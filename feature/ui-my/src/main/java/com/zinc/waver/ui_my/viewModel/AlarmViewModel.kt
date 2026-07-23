@@ -1,5 +1,6 @@
 package com.zinc.waver.ui_my.viewModel
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
@@ -24,7 +25,8 @@ class AlarmViewModel @Inject constructor(
     fun loadAlarmList() {
         viewModelScope.launch(ceh(_alarmLoadFail, true)) {
             val response = loadAlarmList.invoke()
-            _alarmList.value = response.alarms
+            Log.e("ayhan ", "loadAlarmList: $response")
+            _alarmList.value = response.data.alarms
         }
     }
 }
