@@ -37,12 +37,16 @@ fun SearchRecommendScreen(
 
     val recommendList by viewModel.recommendList.observeAsState()
     val copySucceedAsState by viewModel.copySucceed.observeAsState()
-    var copySucceed by remember {
-        mutableStateOf(copySucceedAsState)
-    }
 
     LaunchedEffect(copySucceedAsState) {
-        copySucceed = copySucceedAsState
+        if (copySucceedAsState == true) {
+            Toast.makeText(
+                context,
+                CommonR.string.bucketCopySucceedToast,
+                Toast.LENGTH_SHORT
+            ).show()
+            viewModel.consumeCopySucceed()
+        }
     }
 
     var isFirstItemShown by remember { mutableStateOf(true) }
@@ -91,12 +95,4 @@ fun SearchRecommendScreen(
         }
     }
 
-    if (copySucceed == true) {
-        copySucceed = false
-        Toast.makeText(
-            context,
-            CommonR.string.bucketCopySucceedToast,
-            Toast.LENGTH_SHORT
-        ).show()
-    }
 }

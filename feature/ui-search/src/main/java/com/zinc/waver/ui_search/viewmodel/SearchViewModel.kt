@@ -146,12 +146,16 @@ class SearchViewModel @Inject constructor(
     }
 
     fun copyOtherBucket(bucketId: String) {
-        _copySucceed.value = _copySucceed.value?.not()
         viewModelScope.launch(ceh(_actionFail, null)) {
             val response = copyOtherBucket.invoke(bucketId)
             Log.e("ayhan", "copyOtherBucket response : $response")
             _copySucceed.value = response.success
         }
+    }
+
+    // 복사 성공 토스트를 노출한 뒤 이벤트를 소비 처리 (중복 노출 방지)
+    fun consumeCopySucceed() {
+        _copySucceed.value = false
     }
 
     private fun loadRecommendListDummy(): RecommendList {
