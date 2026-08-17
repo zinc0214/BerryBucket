@@ -62,20 +62,18 @@ import com.zinc.waver.ui_common.R as CommonR
 fun JoinCreateProfile2(
     emailInfo: GoogleEmailInfo,
     createProfileInfo: CreateProfileInfo,
-    goToMain: () -> Unit,
+    goToMain: (isMyBuryUser: Boolean) -> Unit,
     goToBack: () -> Unit
 ) {
     val createUserViewModel: JoinNickNameViewModel = hiltViewModel()
 
     val failJoinAsState by createUserViewModel.failJoin.observeAsState()
-    val goToLoginAsState by createUserViewModel.goToLogin.observeAsState()
+    val joinSucceedAsState by createUserViewModel.joinSucceed.observeAsState()
     val isAlreadyUsedNickNameAsState by createUserViewModel.isAlreadyUsedNickName.observeAsState()
 
     var showErrorPopup by remember { mutableStateOf(false) }
-    LaunchedEffect(goToLoginAsState) {
-        if (goToLoginAsState == true) {
-            goToMain()
-        }
+    LaunchedEffect(joinSucceedAsState) {
+        joinSucceedAsState?.let { isMyBuryUser -> goToMain(isMyBuryUser) }
     }
 
     LaunchedEffect(isAlreadyUsedNickNameAsState) {

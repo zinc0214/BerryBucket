@@ -29,8 +29,9 @@ class JoinNickNameViewModel @Inject constructor(
     private val _isAlreadyUsedNickName = MutableLiveData<Boolean?>()
     val isAlreadyUsedNickName: LiveData<Boolean?> get() = _isAlreadyUsedNickName
 
-    private val _goToLogin = SingleLiveEvent<Boolean>()
-    val goToLogin: LiveData<Boolean> get() = _goToLogin
+    // 발화 시점 = 가입 + 로그인 + accessToken 저장까지 모두 끝난 뒤. 값은 마이버리 기존 회원 여부.
+    private val _joinSucceed = SingleLiveEvent<Boolean>()
+    val joinSucceed: LiveData<Boolean> get() = _joinSucceed
 
     private val _failJoin = SingleLiveEvent<Boolean>()
     val failJoin: LiveData<Boolean> get() = _failJoin
@@ -77,7 +78,6 @@ class JoinNickNameViewModel @Inject constructor(
         Log.e("ayhan", "createNewProfile called :$emailInfo")
         viewModelScope.launch(ceh(_failJoin, true)) {
             _failJoin.value = false
-            _goToLogin.value = false
 
             val res = createProfile(
                 CreateProfileRequest(
@@ -92,7 +92,10 @@ class JoinNickNameViewModel @Inject constructor(
             if (res.code == "6001") {
                 _isAlreadyUsedNickName.value = true
             } else if (res.success) {
-                goToLogin(emailInfo)
+                goToLogin(
+                    emailInfo = emailInfo,
+                    isMyBuryUser = res.data?.isMyBuryUser() == true
+                )
             } else {
                 Log.e("ayhan", "createNewProfile fail : $res")
                 _failJoin.value = true
@@ -100,7 +103,7 @@ class JoinNickNameViewModel @Inject constructor(
         }
     }
 
-    private fun goToLogin(emailInfo: GoogleEmailInfo) {
+    private fun goToLogin(emailInfo: GoogleEmailInfo, isMyBuryUser: Boolean) {
         viewModelScope.launch(ceh(_failJoin, true)) {
             val res = loginByEmail(emailInfo.uid)
             if (res.success) {
@@ -109,7 +112,8 @@ class JoinNickNameViewModel @Inject constructor(
                 res.data.accessToken.let { token ->
                     preferenceDataStoreModule.setAccessToken("Bearer $token")
                 }
-                _goToLogin.value = true
+                // accessToken 저장 이후에 발화해야 한다. 이관 API 가 인증을 요구한다.
+                _joinSucceed.value = isMyBuryUser
             } else {
                 _failJoin.value = true
             }
