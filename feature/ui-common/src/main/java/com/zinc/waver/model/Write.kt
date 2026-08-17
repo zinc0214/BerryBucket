@@ -72,7 +72,7 @@ data class WriteKeyWord(
 @kotlinx.serialization.Serializable
 data class WriteFriend(
     val id: String,
-    val imageUrl: String,
+    val imageUrl: String?, // 프로필 이미지를 등록하지 않은 유저는 null
     val nickname: String
 ) : Serializable
 

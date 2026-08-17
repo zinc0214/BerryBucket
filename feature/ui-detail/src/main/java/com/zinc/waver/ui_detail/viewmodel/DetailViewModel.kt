@@ -169,8 +169,10 @@ class DetailViewModel @Inject constructor(
         profileInfo = loadProfileInfo(isMine, writerId).data
     }
 
+    // 멘션 목록은 댓글 작성용 부가 정보라, 실패해도 상세 로딩 실패 팝업을 띄우지 않는다.
+    // (_loadFail 을 공유하면 버킷 상세는 정상인데 에러 팝업만 뜨는 문제가 생긴다)
     private fun getValidMentionList() {
-        viewModelScope.launch(ceh(_loadFail, DetailLoadFailStatus.LoadFail)) {
+        viewModelScope.launch(ceh(_validMentionList, emptyList())) {
             val response = loadFriends()
             if (response.success) {
                 val mentionList = response.data.filter { it.mutualFollow }.map {
@@ -184,7 +186,8 @@ class DetailViewModel @Inject constructor(
                 }
                 _validMentionList.value = mentionList
             } else {
-                _loadFail.value = DetailLoadFailStatus.LoadFail
+                Log.e("ayhan", "멘션 목록 로드 실패: ${response.message}")
+                _validMentionList.value = emptyList()
             }
         }
     }

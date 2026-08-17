@@ -125,8 +125,10 @@ private fun MentionItem(
         Image(
             painter = rememberAsyncImagePainter(
                 model = item.profileImage,
-                placeholder = painterResource(CommonR.drawable.profile_placeholder),
-                error = painterResource(CommonR.drawable.profile_placeholder)
+                placeholder = painterResource(CommonR.drawable.profile_icon_blank),
+                error = painterResource(CommonR.drawable.profile_icon_blank),
+                // 프로필 이미지를 등록하지 않은 유저(model == null)
+                fallback = painterResource(CommonR.drawable.profile_icon_blank)
             ),
             contentDescription = stringResource(
                 id = R.string.profileImage

@@ -101,7 +101,7 @@ data class TogetherMember(
 
 data class CommentMentionInfo(
     val userId: String,
-    val profileImage: String,
+    val profileImage: String?,
     val nickName: String,
     val isFriend: Boolean,
     val isSelected: Boolean

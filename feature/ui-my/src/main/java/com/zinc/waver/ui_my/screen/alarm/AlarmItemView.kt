@@ -5,8 +5,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.sizeIn
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -52,12 +51,17 @@ fun AlarmItemView(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Image(
-            modifier = Modifier
-                .padding(0.dp)
-                .sizeIn(36.dp),
-            // 이미지 URL이 내려오면 우선 사용하고, 없으면 타입별 아이콘을 사용한다
+            // sizeIn(36.dp) 은 minWidth 만 지정돼 최대 크기가 열려 있었다.
+            // 폴백 아이콘(intrinsic 80dp)이 그대로 커지지 않도록 36dp 로 고정한다.
+            modifier = Modifier.size(36.dp),
+            // 이미지 URL이 내려오면 우선 사용하고, 없으면 타입별 아이콘을 사용한다.
+            // URL 은 있는데 로드에 실패하면 빈 프로필 아이콘으로 대체한다.
             painter = if (alarmItem.imgUrl != null) {
-                rememberAsyncImagePainter(model = alarmItem.imgUrl)
+                rememberAsyncImagePainter(
+                    model = alarmItem.imgUrl,
+                    error = painterResource(CommonR.drawable.profile_icon_blank),
+                    fallback = painterResource(CommonR.drawable.profile_icon_blank)
+                )
             } else {
                 painterResource(getAlarmIcon(alarmItem.type))
             },

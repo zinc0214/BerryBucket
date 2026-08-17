@@ -53,6 +53,6 @@ data class LoadWriteSelectableFriendsResponse(
 data class WriteSelectableFriend(
     val id: String,
     val name: String,
-    val imgUrl: String,
+    val imgUrl: String?, // 프로필 이미지를 등록하지 않은 유저는 null 로 내려온다
     val mutualFollow: Boolean
 )

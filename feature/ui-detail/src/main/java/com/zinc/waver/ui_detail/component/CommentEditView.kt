@@ -242,8 +242,10 @@ fun CommentEditView(
                             ) {
                                 AsyncImage(
                                     model = user.profileImage,
-                                    error = painterResource(com.zinc.waver.ui_common.R.drawable.profile_placeholder),
-                                    placeholder = painterResource(com.zinc.waver.ui_common.R.drawable.profile_placeholder),
+                                    error = painterResource(com.zinc.waver.ui_common.R.drawable.profile_icon_blank),
+                                    placeholder = painterResource(com.zinc.waver.ui_common.R.drawable.profile_icon_blank),
+                                    // 프로필 이미지를 등록하지 않은 유저(model == null)
+                                    fallback = painterResource(com.zinc.waver.ui_common.R.drawable.profile_icon_blank),
                                     contentDescription = "Profile image",
                                     contentScale = ContentScale.Crop,
                                     modifier = Modifier
