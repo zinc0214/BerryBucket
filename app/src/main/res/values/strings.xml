@@ -36,4 +36,16 @@
     <string name="welcomePopupDescription">As you share more bucket lists together,\nyour unique badge will grow</string>
     <string name="welcomePopupNegativeButton">View Badges</string>
     <string name="welcomePopupPositiveButton">Get Started</string>
+
+    <!-- MyBury data connect -->
+    <string name="myBuryConnectCloseDesc">Close</string>
+    <string name="myBuryConnectHeroTitle">Your bucket list\nis better together now</string>
+    <string name="myBuryConnectTitle">Your bucket list continues on Waver</string>
+    <string name="myBuryConnectHighlight">You can move your MyBury data\n(bucket list) over to Waver.</string>
+    <string name="myBuryConnectDescription">Anything you write in MyBury from now on won\'t be saved.\nPlease continue your bucket list on Waver.</string>
+    <string name="myBuryConnectMigrateButton">Continue on Waver</string>
+    <string name="myBuryConnectFreshStartButton">Start fresh</string>
+    <string name="myBuryMigrationRequested">Starting your data migration.</string>
+    <string name="myBuryMigrationAlreadyDone">Your data migration is already complete.</string>
+    <string name="myBuryMigrationAlreadyRequested">Your data migration is already in progress.</string>
 </resources>

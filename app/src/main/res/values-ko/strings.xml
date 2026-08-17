@@ -36,4 +36,16 @@
     <string name="welcomePopupDescription">버킷리스트 공유 함께 올수록\n나만의 이야기를 담은 벗지가 하나씩 생겨요</string>
     <string name="welcomePopupNegativeButton">뱃지 보러가기</string>
     <string name="welcomePopupPositiveButton">시작하기</string>
+
+    <!-- 마이버리 데이터 연결 -->
+    <string name="myBuryConnectCloseDesc">닫기</string>
+    <string name="myBuryConnectHeroTitle">버킷리스트\n이제 함께 즐기세요</string>
+    <string name="myBuryConnectTitle">버킷리스트는 웨이버에서 계속돼요</string>
+    <string name="myBuryConnectHighlight">마이버리 데이터(버킷리스트)를\n웨이버에 옮길 수 있습니다.</string>
+    <string name="myBuryConnectDescription">이후 마이버리에 작성한 내용은 저장되지 않아요.\n버킷리스트는 웨이버에서 이어서 작성해 주세요.</string>
+    <string name="myBuryConnectMigrateButton">웨이버에서 이어서 진행하기</string>
+    <string name="myBuryConnectFreshStartButton">새롭게 시작하기</string>
+    <string name="myBuryMigrationRequested">데이터 이관을 진행합니다.</string>
+    <string name="myBuryMigrationAlreadyDone">이미 데이터 이관이 완료되었습니다.</string>
+    <string name="myBuryMigrationAlreadyRequested">이미 데이터 이관 진행중입니다.</string>
 </resources>
