@@ -111,6 +111,7 @@ private fun MyBuryConnectContent(
             .background(color = Gray1)
     ) {
         MyBuryConnectHeroView(
+            isRequesting = isRequesting,
             onCloseClicked = onSkipClicked,
             modifier = Modifier.weight(1f)
         )
@@ -124,6 +125,7 @@ private fun MyBuryConnectContent(
 
 @Composable
 private fun MyBuryConnectHeroView(
+    isRequesting: Boolean,
     onCloseClicked: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -148,7 +150,7 @@ private fun MyBuryConnectHeroView(
                 modifier = Modifier
                     .align(Alignment.Start)
                     .padding(start = 8.dp, top = 8.dp)
-                    .clickable { onCloseClicked() }
+                    .clickable(enabled = !isRequesting) { onCloseClicked() }
             )
 
             Spacer(modifier = Modifier.weight(1f))
