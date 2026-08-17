@@ -15,4 +15,5 @@ interface LoginRepository {
     suspend fun requestLogin(loginRequest: LoadTokenByEmailRequest): LoadTokenByEmailResponse
     suspend fun checkUserStatus(checkUserStatusRequest: CheckUserStatusRequest): CheckUserStatusResponse
     suspend fun requestMyBuryMigration(): CommonResponse2
+    suspend fun updateFcmToken(token: String): CommonResponse2
 }

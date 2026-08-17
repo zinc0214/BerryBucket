@@ -75,6 +75,10 @@ interface WaverApi {
     @POST("/waver/login")
     suspend fun requestLogin(@Body loadTokenByEmail: LoadTokenByEmailRequest): LoadTokenByEmailResponse
 
+    // FCM 토큰 등록 (푸시 알림 수신용)
+    @POST("/waver/user/fcm-token")
+    suspend fun updateFcmToken(@Body token: String): CommonResponse2
+
     // 이메일 상태 조회
     @POST("/waver/user/status")
     suspend fun checkUserStatus(@Body loadTokenByEmail: CheckUserStatusRequest): CheckUserStatusResponse

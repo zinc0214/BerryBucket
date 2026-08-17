@@ -45,4 +45,8 @@ class LoginRepositoryImpl @Inject constructor(
     override suspend fun requestMyBuryMigration(): CommonResponse2 {
         return waverApi.requestMyBuryMigration()
     }
+
+    override suspend fun updateFcmToken(token: String): CommonResponse2 {
+        return waverApi.updateFcmToken(token)
+    }
 }
