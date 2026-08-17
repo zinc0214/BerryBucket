@@ -183,7 +183,7 @@ private fun HeaderView(info: MyWaverTotalInfo, selectedBadge: MyBadge?, onBackPr
         )
 
         Image(
-            painter = painterResource(id = R.drawable.img_wave_02),
+            painter = painterResource(id = CommonR.drawable.img_wave_02),
             contentDescription = null,
             modifier = Modifier
                 .sizeIn(60.dp)

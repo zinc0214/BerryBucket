@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -44,12 +45,14 @@ import com.zinc.waver.R
 import com.zinc.waver.model.DialogButtonInfo
 import com.zinc.waver.ui.design.theme.Gray1
 import com.zinc.waver.ui.design.theme.Gray10
+import com.zinc.waver.ui.design.theme.Gray11
 import com.zinc.waver.ui.design.theme.Gray3
 import com.zinc.waver.ui.design.theme.Gray6
 import com.zinc.waver.ui.design.theme.Main4
 import com.zinc.waver.ui.presentation.component.MyText
 import com.zinc.waver.ui.presentation.component.dialog.CommonDialogView
 import com.zinc.waver.ui.util.dpToSp
+import com.zinc.waver.util.shadow
 import com.zinc.waver.ui_common.R as CommonR
 
 /**
@@ -216,66 +219,104 @@ private fun MyBuryConnectGuideView(
     onMigrateClicked: () -> Unit,
     onSkipClicked: () -> Unit
 ) {
+    // 물결 장식이 좌측 12dp 에 붙어야 하므로 가로 패딩은 바깥 Column 이 아니라
+    // 텍스트/버튼 블록에 각각 준다.
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .background(color = Gray1)
-            .navigationBarsPadding()
-            .padding(horizontal = 20.dp),
+            .navigationBarsPadding(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Spacer(modifier = Modifier.height(36.dp))
-
-        MyText(
-            text = stringResource(id = R.string.myBuryConnectTitle),
-            color = Gray10,
-            fontSize = dpToSp(18.dp),
-            fontWeight = FontWeight.Bold,
-            textAlign = TextAlign.Center
+        // 좌측 물결 장식 — 좌측 마진 12dp, 타이틀 바로 위.
+        // offset 으로 위쪽 12dp 를 그라데이션 배경에 겹쳐 그린다. offset 은 그리기 위치만
+        // 옮기므로 레이아웃 높이(60dp)는 그대로 남아 타이틀 위치는 영향받지 않는다.
+        // Column 의 자식은 선언 순서대로 그려지므로 이 장식이 히어로 영역 위에 올라온다.
+        Image(
+            painter = painterResource(id = CommonR.drawable.img_wave_02),
+            contentDescription = null,
+            modifier = Modifier
+                .align(Alignment.Start)
+                .offset(y = (-12).dp)
+                .padding(start = 12.dp)
+                .size(60.dp)
         )
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 26.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            MyText(
+                text = stringResource(id = R.string.myBuryConnectTitle),
+                color = Gray10,
+                fontSize = dpToSp(18.dp),
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center
+            )
 
-        MyText(
-            text = stringResource(id = R.string.myBuryConnectHighlight),
-            color = Main4,
-            fontSize = dpToSp(15.dp),
-            fontWeight = FontWeight.Bold,
-            textAlign = TextAlign.Center,
-            lineHeight = dpToSp(22.dp)
+            Spacer(modifier = Modifier.height(16.dp))
+
+            MyText(
+                text = stringResource(id = R.string.myBuryConnectHighlight),
+                color = Main4,
+                fontSize = dpToSp(15.dp),
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center,
+                lineHeight = dpToSp(22.dp)
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            MyText(
+                text = stringResource(id = R.string.myBuryConnectDescription),
+                color = Gray6,
+                fontSize = dpToSp(14.dp),
+                textAlign = TextAlign.Center,
+                lineHeight = dpToSp(21.dp)
+            )
+        }
+
+        // 우측 물결 장식 — 아래 "웨이버에서 이어서 진행하기" 버튼과 7dp 간격
+        Image(
+            painter = painterResource(id = CommonR.drawable.img_wave_03),
+            contentDescription = null,
+            modifier = Modifier
+                .align(Alignment.End)
+                .padding(end = 20.dp)
+                .size(60.dp)
         )
 
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(modifier = Modifier.height(7.dp))
 
-        MyText(
-            text = stringResource(id = R.string.myBuryConnectDescription),
-            color = Gray6,
-            fontSize = dpToSp(14.dp),
-            textAlign = TextAlign.Center,
-            lineHeight = dpToSp(21.dp)
-        )
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            MyBuryConnectButton(
+                text = stringResource(id = R.string.myBuryConnectMigrateButton),
+                textColor = Gray1,
+                backgroundColor = Main4,
+                borderColor = null,
+                enabled = !isRequesting,
+                hasShadow = true,
+                onClicked = onMigrateClicked
+            )
 
-        Spacer(modifier = Modifier.height(28.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
-        MyBuryConnectButton(
-            text = stringResource(id = R.string.myBuryConnectMigrateButton),
-            textColor = Gray1,
-            backgroundColor = Main4,
-            borderColor = null,
-            enabled = !isRequesting,
-            onClicked = onMigrateClicked
-        )
-
-        Spacer(modifier = Modifier.height(12.dp))
-
-        MyBuryConnectButton(
-            text = stringResource(id = R.string.myBuryConnectFreshStartButton),
-            textColor = Gray10,
-            backgroundColor = Gray1,
-            borderColor = Gray3,
-            enabled = !isRequesting,
-            onClicked = onSkipClicked
-        )
+            MyBuryConnectButton(
+                text = stringResource(id = R.string.myBuryConnectFreshStartButton),
+                textColor = Gray10,
+                backgroundColor = Gray1,
+                borderColor = Gray3,
+                enabled = !isRequesting,
+                onClicked = onSkipClicked
+            )
+        }
 
         Spacer(modifier = Modifier.height(24.dp))
     }
@@ -288,6 +329,7 @@ private fun MyBuryConnectButton(
     backgroundColor: Color,
     borderColor: Color?,
     enabled: Boolean,
+    hasShadow: Boolean = false,
     onClicked: () -> Unit
 ) {
     val shape = RoundedCornerShape(8.dp)
@@ -299,6 +341,17 @@ private fun MyBuryConnectButton(
         textAlign = TextAlign.Center,
         modifier = Modifier
             .fillMaxWidth()
+            // 쉐도우는 clip 보다 앞에 와야 버튼 바깥으로 번진다.
+            .then(
+                if (hasShadow) {
+                    Modifier.shadow(
+                        color = Gray11.copy(alpha = 0.2f),
+                        blurRadius = 8.dp
+                    )
+                } else {
+                    Modifier
+                }
+            )
             .clip(shape)
             .background(color = backgroundColor, shape = shape)
             .then(
