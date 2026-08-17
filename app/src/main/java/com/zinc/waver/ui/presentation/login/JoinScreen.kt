@@ -54,7 +54,7 @@ fun JoinScreen(
                 },
                 addImageAction = addImageAction
             )
-        } else if (isFirstCreate) {
+        } else if (isFirstCreate && !showMyBuryConnect) {
             joinTryEmail.value?.let {
                 JoinCreateProfile2(
                     emailInfo = it,

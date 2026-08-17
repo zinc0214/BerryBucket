@@ -1,5 +1,6 @@
 package com.zinc.waver.ui.presentation.login
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -29,6 +30,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -66,6 +68,13 @@ fun MyBuryConnectScreen(onFinished: () -> Unit) {
     // 안내할 내용이 없는 결과(8200 / 기타 코드 / 네트워크 오류)는 팝업 없이 바로 다음 단계로.
     LaunchedEffect(migrationResult) {
         if (migrationResult == MyBuryMigrationResult.NONE) {
+            onFinished()
+        }
+    }
+
+    // 시스템 뒤로가기도 닫기 버튼과 동일하게 동작하되, 요청 중에는 무시한다.
+    BackHandler {
+        if (!isRequesting) {
             onFinished()
         }
     }
@@ -108,6 +117,13 @@ private fun MyBuryConnectContent(
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .pointerInput(Unit) {
+                awaitPointerEventScope {
+                    while (true) {
+                        awaitPointerEvent()
+                    }
+                }
+            }
             .background(color = Gray1)
     ) {
         MyBuryConnectHeroView(
