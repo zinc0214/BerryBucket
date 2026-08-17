@@ -395,7 +395,7 @@ git commit -m "[가입] 마이버리 데이터 이관 API 및 응답 코드 매�
 | 상단 그라데이션 배경 | `CommonR.drawable.bg_membership_login` | 360×360 vector |
 | 좌측 마이버리 로고 | `CommonR.drawable.mybury_logo` | 48×48 vector |
 | 두 로고를 잇는 물결 | `CommonR.drawable.mybury_to_waver` | 68×64 vector |
-| 우측 웨이버 로고 | `R.drawable.playstore` | webp, 앱 아이콘 |
+| 우측 웨이버 로고 | `R.mipmap.ic_launcher` | png, 앱 런처 아이콘 (git 추적됨) |
 | 닫기 버튼 | `CommonR.drawable.btn_40_close` | 40×40 vector, 검은 stroke |
 
 `btn_40_close` 는 검은색 stroke 이므로 `Icon(..., tint = Gray1)` 으로 흰색으로 바꿔 쓴다.
@@ -653,7 +653,7 @@ private fun MyBuryConnectHeroView(
                         .height(52.dp)
                 )
                 Image(
-                    painter = painterResource(id = R.drawable.playstore),
+                    painter = painterResource(id = R.mipmap.ic_launcher),
                     contentDescription = null,
                     modifier = Modifier
                         .size(76.dp)

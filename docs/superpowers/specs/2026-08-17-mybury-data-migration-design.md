@@ -112,7 +112,7 @@ suspend fun requestMyBuryMigration(): CommonResponse2
 ┌─────────────────────────────┐
 │ ✕                           │  btn_40_close, 흰색 tint, statusBarsPadding
 │                             │
-│   [mybury] ∿ [waver]        │  Row: mybury_logo · mybury_to_waver · playstore
+│   [mybury] ∿ [waver]        │  Row: mybury_logo · mybury_to_waver · ic_launcher
 │                             │
 │      버킷리스트              │  Gray1, Bold, 24dp, center
 │   이제 함께 즐기세요          │
@@ -145,7 +145,7 @@ suspend fun requestMyBuryMigration(): CommonResponse2
 | 상단 그라데이션 배경 | `CommonR.drawable.bg_membership_login` |
 | 좌측 마이버리 로고 | `CommonR.drawable.mybury_logo` |
 | 두 로고를 잇는 물결 | `CommonR.drawable.mybury_to_waver` |
-| 우측 웨이버 로고 | `R.drawable.playstore` (앱 아이콘, 디자인과 동일) |
+| 우측 웨이버 로고 | `R.mipmap.ic_launcher` (앱 런처 아이콘, 디자인과 동일) |
 | 닫기 버튼 | `CommonR.drawable.btn_40_close` |
 
 ### 인터페이스
