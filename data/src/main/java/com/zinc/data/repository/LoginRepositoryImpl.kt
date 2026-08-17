@@ -2,6 +2,7 @@ package com.zinc.data.repository
 
 import com.zinc.common.models.CheckUserStatusRequest
 import com.zinc.common.models.CheckUserStatusResponse
+import com.zinc.common.models.CommonResponse2
 import com.zinc.common.models.CreateProfileRequest
 import com.zinc.common.models.JoinResponse
 import com.zinc.common.models.LoadTokenByEmailRequest
@@ -39,5 +40,9 @@ class LoginRepositoryImpl @Inject constructor(
 
     override suspend fun checkUserStatus(checkUserStatusRequest: CheckUserStatusRequest): CheckUserStatusResponse {
         return waverApi.checkUserStatus(checkUserStatusRequest)
+    }
+
+    override suspend fun requestMyBuryMigration(): CommonResponse2 {
+        return waverApi.requestMyBuryMigration()
     }
 }

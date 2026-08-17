@@ -67,6 +67,10 @@ interface WaverApi {
         @Part profileImage: MultipartBody.Part?
     ): JoinResponse
 
+    // 마이버리 데이터 이관 요청 (mybury 기존 회원만 요청 가능, 스케줄러가 순차 이관)
+    @POST("/waver/user/migration")
+    suspend fun requestMyBuryMigration(): CommonResponse2
+
     // 로그인
     @POST("/waver/login")
     suspend fun requestLogin(@Body loadTokenByEmail: LoadTokenByEmailRequest): LoadTokenByEmailResponse
