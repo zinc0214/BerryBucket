@@ -7,8 +7,15 @@ data class JoinResponse(
     val success: Boolean,
     val code: String,
     val message: String,
-    val data: Any? // 에러 아닐 때는 수정해야 할 듯...
+    val data: JoinData?
 ) : Serializable
+
+data class JoinData(
+    val myburyYn: YesOrNo?
+) : Serializable {
+    // 마이버리 기존 회원 여부. 필드 누락이나 알 수 없는 값이면 false 로 떨어진다.
+    fun isMyBuryUser() = myburyYn?.isYes() == true
+}
 
 data class JoinAccessToken(
     val accessToken: String
