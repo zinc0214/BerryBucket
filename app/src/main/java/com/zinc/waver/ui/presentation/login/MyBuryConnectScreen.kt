@@ -168,7 +168,7 @@ private fun MyBuryConnectHeroView(
                         .height(52.dp)
                 )
                 Image(
-                    painter = painterResource(id = R.drawable.playstore),
+                    painter = painterResource(id = R.mipmap.ic_launcher),
                     contentDescription = null,
                     modifier = Modifier
                         .size(76.dp)
