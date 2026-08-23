@@ -18,8 +18,20 @@ class MyBuryConnectViewModel @Inject constructor(
     private val _migrationResult = MutableLiveData<MyBuryMigrationResult?>(null)
     val migrationResult: LiveData<MyBuryMigrationResult?> get() = _migrationResult
 
-    // 중복 요청 방지. 결과가 나오면 화면이 곧 닫히므로 되돌릴 필요가 없다.
+    // 중복 요청 방지.
     private var isRequesting = false
+
+    /**
+     * 화면이 끝날 때 결과를 소비한다.
+     *
+     * 이 VM 은 Activity 스코프로 유지되므로 리셋하지 않으면 다음 진입 때
+     * [migrationResult] 가 지난 결과를 그대로 들고 있어, 버튼을 누르지도 않았는데
+     * 이전 안내 팝업이 다시 뜬다.
+     */
+    fun consumeResult() {
+        _migrationResult.value = null
+        isRequesting = false
+    }
 
     fun requestMigration() {
         if (isRequesting) return

@@ -68,17 +68,24 @@ fun MyBuryConnectScreen(onFinished: () -> Unit) {
 
     var isRequesting by remember { mutableStateOf(false) }
 
+    // 모든 종료 경로는 이 함수를 거쳐야 한다. VM 이 Activity 스코프로 유지되므로 결과를 소비하지
+    // 않고 나가면 다음 진입 때 지난 안내 팝업이 그대로 다시 뜬다.
+    val finish = {
+        viewModel.consumeResult()
+        onFinished()
+    }
+
     // 안내할 내용이 없는 결과(8200 / 기타 코드 / 네트워크 오류)는 팝업 없이 바로 다음 단계로.
     LaunchedEffect(migrationResult) {
         if (migrationResult == MyBuryMigrationResult.NONE) {
-            onFinished()
+            finish()
         }
     }
 
     // 시스템 뒤로가기도 닫기 버튼과 동일하게 동작하되, 요청 중에는 무시한다.
     BackHandler {
         if (!isRequesting) {
-            onFinished()
+            finish()
         }
     }
 
@@ -88,7 +95,7 @@ fun MyBuryConnectScreen(onFinished: () -> Unit) {
             isRequesting = true
             viewModel.requestMigration()
         },
-        onSkipClicked = onFinished
+        onSkipClicked = finish
     )
 
     migrationResult?.messageRes()?.let { messageRes ->
@@ -99,7 +106,7 @@ fun MyBuryConnectScreen(onFinished: () -> Unit) {
                 text = CommonR.string.confirm,
                 color = Main4
             ),
-            rightButtonEvent = onFinished
+            rightButtonEvent = finish
         )
     }
 }

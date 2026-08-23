@@ -34,6 +34,11 @@ fun JoinScreen(
 
     val joinTryEmail: MutableState<GoogleEmailInfo?> = remember { mutableStateOf(null) }
 
+    // 가입 완료 이후에는 JoinCreateProfile2 로 절대 되돌아가지 않는다.
+    // showMyBuryConnect 로만 가렸더니 연결 화면이 닫힐 때 JoinCreateProfile2 가 다시 컴포지션에
+    // 들어왔고, joinSucceed(SingleLiveEvent) 의 .value 가 true 로 남아 있어 observeAsState 초기값이
+    // true → LaunchedEffect 재발화 → 연결 화면 재노출이 무한 반복됐다.
+    var joinSucceed by remember { mutableStateOf(false) }
     var showMyBuryConnect by remember { mutableStateOf(false) }
     var showBadgePopup by remember { mutableStateOf(false) }
 
@@ -54,12 +59,13 @@ fun JoinScreen(
                 },
                 addImageAction = addImageAction
             )
-        } else if (isFirstCreate && !showMyBuryConnect) {
+        } else if (isFirstCreate && !joinSucceed) {
             joinTryEmail.value?.let {
                 JoinCreateProfile2(
                     emailInfo = it,
                     createProfileInfo = createProfileInfo,
                     goToMain = { isMyBuryUser ->
+                        joinSucceed = true
                         // 마이버리 기존 회원이면 데이터 연결 화면을 먼저 보여준다.
                         if (isMyBuryUser) {
                             showMyBuryConnect = true
