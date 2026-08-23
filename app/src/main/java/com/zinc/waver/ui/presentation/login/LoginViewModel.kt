@@ -7,6 +7,7 @@ import androidx.lifecycle.viewModelScope
 import com.zinc.datastore.login.PreferenceDataStoreModule
 import com.zinc.domain.usecases.login.LoginByEmail
 import com.zinc.waver.ui.viewmodel.CommonViewModel
+import com.zinc.waver.util.FcmTokenRegister
 import com.zinc.waver.util.SingleLiveEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.collectLatest
@@ -17,6 +18,7 @@ import javax.inject.Inject
 class LoginViewModel @Inject constructor(
     private val loginByEmail: LoginByEmail,
     private val preferenceDataStoreModule: PreferenceDataStoreModule,
+    private val fcmTokenRegister: FcmTokenRegister,
 ) : CommonViewModel() {
 
     private val _loginFail = SingleLiveEvent<Boolean>()
@@ -65,6 +67,8 @@ class LoginViewModel @Inject constructor(
                 val data = result.data.accessToken
                 preferenceDataStoreModule.setAccessToken("Bearer $data")
                 preferenceDataStoreModule.setLoginEmailUid(emailUid)
+                // accessToken 저장 이후여야 한다. TokenInterceptor 가 DataStore 에서 읽어 헤더를 붙인다.
+                fcmTokenRegister.register()
                 _goToMain.value = true
             } else {
                 _loginFail.value = true

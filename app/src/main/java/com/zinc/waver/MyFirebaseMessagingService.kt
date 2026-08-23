@@ -12,8 +12,15 @@ import androidx.core.app.NotificationManagerCompat
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import com.zinc.waver.ui.presentation.HomeActivity
+import com.zinc.waver.util.FcmTokenRegister
+import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class MyFirebaseMessagingService : FirebaseMessagingService() {
+
+    @Inject
+    lateinit var fcmTokenRegister: FcmTokenRegister
 
     companion object {
         private const val CHANNEL_ID = "waver_notification_channel"
@@ -23,7 +30,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
     override fun onNewToken(token: String) {
         super.onNewToken(token)
         Log.d("FCM_TOKEN", "Refreshed token: $token")
-        // TODO: 서버로 토큰 전송
+        fcmTokenRegister.register(token)
     }
 
     override fun onMessageReceived(remoteMessage: RemoteMessage) {

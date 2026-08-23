@@ -11,6 +11,7 @@ import com.zinc.domain.usecases.login.CreateProfile
 import com.zinc.domain.usecases.login.LoginByEmail
 import com.zinc.domain.usecases.more.CheckAlreadyUsedNickname
 import com.zinc.waver.ui.viewmodel.CommonViewModel
+import com.zinc.waver.util.FcmTokenRegister
 import com.zinc.waver.util.SingleLiveEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
@@ -24,6 +25,7 @@ class JoinNickNameViewModel @Inject constructor(
     private val loginByEmail: LoginByEmail,
     private val checkAlreadyUsedNickname: CheckAlreadyUsedNickname,
     private val preferenceDataStoreModule: PreferenceDataStoreModule,
+    private val fcmTokenRegister: FcmTokenRegister,
 ) : CommonViewModel() {
 
     private val _isAlreadyUsedNickName = MutableLiveData<Boolean?>()
@@ -112,6 +114,7 @@ class JoinNickNameViewModel @Inject constructor(
                 res.data.accessToken.let { token ->
                     preferenceDataStoreModule.setAccessToken("Bearer $token")
                 }
+                fcmTokenRegister.register()
                 // accessToken 저장 이후에 발화해야 한다. 이관 API 가 인증을 요구한다.
                 _joinSucceed.value = isMyBuryUser
             } else {

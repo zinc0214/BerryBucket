@@ -11,6 +11,7 @@ import com.zinc.domain.usecases.login.CheckUserStatus
 import com.zinc.domain.usecases.login.CreateProfile
 import com.zinc.domain.usecases.login.LoginByEmail
 import com.zinc.waver.ui.viewmodel.CommonViewModel
+import com.zinc.waver.util.FcmTokenRegister
 import com.zinc.waver.util.SingleLiveEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
@@ -22,6 +23,7 @@ class JoinEmailViewModel @Inject constructor(
     private val createProfile: CreateProfile,
     private val checkUserState: CheckUserStatus,
     private val preferenceDataStoreModule: PreferenceDataStoreModule,
+    private val fcmTokenRegister: FcmTokenRegister,
 ) : CommonViewModel() {
 
     private val _failEmailCheck = SingleLiveEvent<Boolean>()
@@ -47,6 +49,8 @@ class JoinEmailViewModel @Inject constructor(
                 res.data.accessToken.let { token ->
                     preferenceDataStoreModule.setAccessToken("Bearer $token")
                 }
+                // accessToken 저장 이후여야 한다. TokenInterceptor 가 DataStore 에서 읽어 헤더를 붙인다.
+                fcmTokenRegister.register()
                 _isAlreadyUsedEmail.value = true
             } else {
                 _goToMakeNickName.value = emailInfo
