@@ -41,7 +41,12 @@ class FcmTokenRegister @Inject constructor(
                     return@launch
                 }
                 val res = updateFcmToken(token ?: fetchFcmToken())
-                Log.d(TAG, "FCM 토큰 전송 : success=${res.success}, code=${res.code}")
+                if (res.success) {
+                    Log.d(TAG, "FCM 토큰 전송 : success=${res.success}, code=${res.code}, message=${res.message}")
+                } else {
+                    // success=false 는 HTTP 200 으로 오는 서버 거부다. Log.d 로는 놓치기 쉬워 별도 레벨로 남긴다.
+                    Log.e(TAG, "FCM 토큰 전송 거부 : success=${res.success}, code=${res.code}, message=${res.message}")
+                }
             }.onFailure {
                 Log.e(TAG, "FCM 토큰 전송 실패", it)
             }

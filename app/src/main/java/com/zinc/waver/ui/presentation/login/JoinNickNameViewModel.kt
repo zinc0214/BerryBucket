@@ -114,6 +114,7 @@ class JoinNickNameViewModel @Inject constructor(
                 res.data.accessToken.let { token ->
                     preferenceDataStoreModule.setAccessToken("Bearer $token")
                 }
+                // accessToken 저장 이후여야 한다. TokenInterceptor 가 DataStore 에서 읽어 헤더를 붙인다.
                 fcmTokenRegister.register()
                 // accessToken 저장 이후에 발화해야 한다. 이관 API 가 인증을 요구한다.
                 _joinSucceed.value = isMyBuryUser

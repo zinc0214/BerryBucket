@@ -395,11 +395,57 @@ Run: `./gradlew installDebug`
 
 - [ ] **Step 2: 요청 로그 확인**
 
+`data/src/main/java/com/zinc/data/di/NetworkModule.kt` 는 현재 `HttpLoggingInterceptor` 를
+`Level.BASIC` 으로 고정하고 있고, 이 레벨은 요청 라인과 바이트 수만 남기며 바디는 절대 찍지
+않는다. 이 태스크의 목적이 "서버가 따옴표로 감싼 JSON 바디를 받아들이는지" 를 확인하는 것이므로,
+`BASIC` 인 채로는 로그로 답을 낼 수 없다.
+
+또한 `tokenInterceptor` 가 로깅 인터셉터 *다음*에 등록되어 있어(`.addInterceptor(logging)` →
+`.addInterceptor(tokenInterceptor)`), `Level.BODY` 로 올리더라도 `Authorization` 헤더는 로그에
+찍히지 않는다. 헤더까지 보려면 등록 순서를 바꿔 `tokenInterceptor` 가 먼저 실행되게 해야 한다
+(OkHttp 인터셉터는 등록 순서대로 요청을 감싸므로, 로깅 인터셉터가 나중에 추가돼야 그 시점의
+헤더를 볼 수 있다). 이렇게 하지 않으면 401(인증 실패)과 400(바디 형식 오류)을 로그만으로
+구분할 수 없다.
+
+**검증 전 임시로 `NetworkModule.kt` 를 아래와 같이 바꾼다** (커밋하지 않는다):
+
+Before:
+```kotlin
+        OkHttpClient.Builder()
+            .addInterceptor(
+                HttpLoggingInterceptor().apply {
+                    setLevel(HttpLoggingInterceptor.Level.BASIC)
+                }
+            )
+            .addInterceptor(tokenInterceptor)
+            .authenticator(authInterceptor)
+            .build()
+```
+
+After (임시):
+```kotlin
+        OkHttpClient.Builder()
+            .addInterceptor(tokenInterceptor)
+            .addInterceptor(
+                HttpLoggingInterceptor().apply {
+                    setLevel(HttpLoggingInterceptor.Level.BODY)
+                }
+            )
+            .authenticator(authInterceptor)
+            .build()
+```
+
+즉 (1) `Level.BASIC` → `Level.BODY` 로 바꾸고, (2) `.addInterceptor(tokenInterceptor)` 를
+로깅 인터셉터보다 앞으로 옮긴다.
+
 Run: `adb logcat -s FCM_TOKEN okhttp.OkHttpClient`
 
 기대하는 것:
 - `FCM 토큰 전송 : success=true, code=...` 로그
-- `POST /waver/user/fcm-token` 요청, 바디는 따옴표로 감싼 토큰 문자열
+- `POST /waver/user/fcm-token` 요청, `Authorization: Bearer ...` 헤더, 바디는 따옴표로 감싼 토큰 문자열
+
+**확인이 끝나면 `NetworkModule.kt` 를 반드시 원래 상태(Level.BASIC, tokenInterceptor 가 로깅
+인터셉터 다음)로 되돌린다.** 이 변경은 검증용 임시 변경이며 커밋 대상이 아니다.
 
 - [ ] **Step 3: 400/415 응답이면 raw 바디로 전환**
 
