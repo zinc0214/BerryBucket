@@ -14,11 +14,16 @@ import com.zinc.domain.models.GoogleEmailInfo
 import com.zinc.waver.ui.presentation.login.model.CreateProfileInfo
 import com.zinc.waver.ui.presentation.model.ActionWithActivity
 
+/**
+ * 가입 플로우. 가입이 끝나면 [goToMain] 으로 홈에 넘긴다.
+ *
+ * 웰컴 팝업은 이 화면이 아니라 홈에서 띄운다. [goToMain] 도달 = 가입 성공이므로
+ * 홈이 그 신호만으로 팝업 노출 여부를 판단할 수 있다.
+ */
 @Composable
 fun JoinScreen(
     goToMain: () -> Unit,
     goToBack: () -> Unit,
-    goToBadgeInfo: () -> Unit,
     goToLogin: (GoogleEmailInfo) -> Unit,
     addImageAction: (ActionWithActivity.AddImage) -> Unit,
 ) {
@@ -40,7 +45,6 @@ fun JoinScreen(
     // true → LaunchedEffect 재발화 → 연결 화면 재노출이 무한 반복됐다.
     var joinSucceed by remember { mutableStateOf(false) }
     var showMyBuryConnect by remember { mutableStateOf(false) }
-    var showBadgePopup by remember { mutableStateOf(false) }
 
     Box(modifier = Modifier.fillMaxSize()) {
         if (emailLoginSucceed.not()) {
@@ -70,7 +74,7 @@ fun JoinScreen(
                         if (isMyBuryUser) {
                             showMyBuryConnect = true
                         } else {
-                            showBadgePopup = true
+                            goToMain()
                         }
                     },
                     goToBack = {
@@ -83,22 +87,12 @@ fun JoinScreen(
         if (showMyBuryConnect) {
             MyBuryConnectScreen(
                 onFinished = {
+                    // 이관 안내 팝업과 연결 화면을 먼저 걷어낸 뒤 홈으로 넘긴다.
                     showMyBuryConnect = false
-                    showBadgePopup = true
+                    goToMain()
                 }
             )
         }
-    }
-
-    if (showBadgePopup) {
-        WelcomePopupScreen(
-            gotoStart = {
-                goToMain()
-            },
-            goToBadgeInfo = {
-                goToBadgeInfo()
-            }
-        )
     }
 }
 

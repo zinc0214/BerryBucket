@@ -34,6 +34,7 @@ import com.zinc.waver.model.AddImageType
 import com.zinc.waver.model.LoadedImageInfo
 import com.zinc.waver.ui.presentation.login.JoinScreen
 import com.zinc.waver.ui.presentation.login.LoginScreen
+import com.zinc.waver.ui.presentation.login.WelcomePopupScreen
 import com.zinc.waver.ui.presentation.model.ActionWithActivity
 import com.zinc.waver.ui.presentation.model.WaverPlusType
 import com.zinc.waver.ui.presentation.screen.billing.ChooseSubscription
@@ -126,6 +127,11 @@ class HomeActivity : AppCompatActivity(),
                     mutableStateOf(ShowParentScreenType.Login)
                 }
 
+            // 웰컴 팝업은 가입 직후에만 노출한다.
+            // 참으로 만드는 곳은 아래 JoinScreen 의 goToMain 하나뿐이다. 로그인으로 들어온 홈,
+            // 배지 화면에서 돌아온 홈은 이 값을 건드리지 않으므로 false 로 남아 팝업이 뜨지 않는다.
+            val showWelcomePopup = remember { mutableStateOf(false) }
+
             // 알림 클릭 시 알림 화면으로 이동
             val notificationClickAction = intent.getStringExtra("notification_click_action")
             if (notificationClickAction == "OPEN_ALARM_SCREEN") {
@@ -135,6 +141,8 @@ class HomeActivity : AppCompatActivity(),
             when (showScreenType.value) {
                 ShowParentScreenType.Join -> {
                     JoinScreen(goToMain = {
+                        // 가입 완료. 홈으로 넘긴 뒤 홈 위에서 웰컴 팝업을 띄운다.
+                        showWelcomePopup.value = true
                         showScreenType.value =
                             ShowParentScreenType.Main
                     }, goToBack = {
@@ -143,8 +151,6 @@ class HomeActivity : AppCompatActivity(),
                         retryEmail.value = it.email
                         showScreenType.value =
                             ShowParentScreenType.Login
-                    }, goToBadgeInfo = {
-                        showScreenType.value = ShowParentScreenType.BadgeInfo
                     },
                         addImageAction = {
                         takePhotoAction = it
@@ -212,6 +218,20 @@ class HomeActivity : AppCompatActivity(),
                             checkPermissionAction.isAllGranted.invoke(it)
                             isNeedToShowPermission = false
                         })
+                    }
+
+                    if (showWelcomePopup.value) {
+                        WelcomePopupScreen(
+                            goToBadgeInfo = {
+                                // 배지 화면에서 뒤로가면 다시 Main 으로 돌아오므로,
+                                // 여기서 내려두지 않으면 팝업이 재노출된다.
+                                showWelcomePopup.value = false
+                                showScreenType.value = ShowParentScreenType.BadgeInfo
+                            },
+                            gotoStart = {
+                                showWelcomePopup.value = false
+                            }
+                        )
                     }
                 }
 
