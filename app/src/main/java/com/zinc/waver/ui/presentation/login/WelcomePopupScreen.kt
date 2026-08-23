@@ -1,9 +1,11 @@
 package com.zinc.waver.ui.presentation.login
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -40,63 +42,70 @@ fun WelcomePopupScreen(
     Dialog(
         properties = DialogProperties(
             dismissOnBackPress = false,
-            dismissOnClickOutside = false
+            dismissOnClickOutside = false,
+            usePlatformDefaultWidth = false
         ),
         onDismissRequest = { }) {
-        Column(
+        Box(
             modifier = Modifier
-                .width(320.dp)
-                .padding(20.dp)
-                .clip(RoundedCornerShape(8.dp))
-                .background(color = Gray1),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+                .fillMaxSize()
+                .background(Color.Black.copy(alpha = 0.45f)),
+            contentAlignment = Alignment.Center
         ) {
-            // 웰컴 이미지
-            Icon(
-                painter = painterResource(id = R.drawable.welcome_waver),
-                contentDescription = "Welcome Waver",
-                modifier = Modifier.fillMaxWidth(),
-                tint = Color.Unspecified
-            )
+            Column(
+                modifier = Modifier
+                    .width(320.dp)
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(color = Gray1),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                // 웰컴 이미지
+                Icon(
+                    painter = painterResource(id = R.drawable.welcome_waver),
+                    contentDescription = "Welcome Waver",
+                    modifier = Modifier.fillMaxWidth(),
+                    tint = Color.Unspecified
+                )
 
-            Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(12.dp))
 
-            // 제목
-            MyText(
-                text = stringResource(id = R.string.welcomePopupTitle),
-                fontSize = dpToSp(16.dp),
-                fontWeight = FontWeight.Bold,
-                color = Main4,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.padding(horizontal = 24.dp)
-            )
+                // 제목
+                MyText(
+                    text = stringResource(id = R.string.welcomePopupTitle),
+                    fontSize = dpToSp(16.dp),
+                    fontWeight = FontWeight.Bold,
+                    color = Main4,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.padding(horizontal = 24.dp)
+                )
 
-            Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(8.dp))
 
-            // 설명 텍스트
-            MyText(
-                text = stringResource(id = R.string.welcomePopupDescription),
-                fontSize = dpToSp(15.dp),
-                color = Gray7,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.padding(horizontal = 34.dp)
-            )
+                // 설명 텍스트
+                MyText(
+                    text = stringResource(id = R.string.welcomePopupDescription),
+                    fontSize = dpToSp(15.dp),
+                    color = Gray7,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.padding(horizontal = 34.dp)
+                )
 
-            Spacer(modifier = Modifier.height(39.dp))
+                Spacer(modifier = Modifier.height(39.dp))
 
-            BottomButtonView(
-                negative = DialogButtonInfo(
-                    text = R.string.welcomePopupNegativeButton,
-                    color = Gray7
-                ),
-                positive = DialogButtonInfo(
-                    text = R.string.welcomePopupPositiveButton,
-                    color = Main4
-                ),
-                negativeEvent = goToBadgeInfo,
-                positiveEvent = gotoStart
-            )
+                BottomButtonView(
+                    negative = DialogButtonInfo(
+                        text = R.string.welcomePopupNegativeButton,
+                        color = Gray7
+                    ),
+                    positive = DialogButtonInfo(
+                        text = R.string.welcomePopupPositiveButton,
+                        color = Main4
+                    ),
+                    negativeEvent = goToBadgeInfo,
+                    positiveEvent = gotoStart
+                )
+            }
         }
     }
 }
