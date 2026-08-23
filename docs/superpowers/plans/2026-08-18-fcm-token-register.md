@@ -388,12 +388,25 @@ git commit -m "[알림] 로그인 및 토큰 갱신 시점에 FCM 토큰 서버 
 - Consumes: Task 3 까지의 전체 동작
 - Produces: 없음
 
-- [ ] **Step 1: 앱 설치 후 로그인**
+> **검증 완료 (2026-08-23, Pixel_7_Pro_API_33 에뮬레이터)**
+>
+> - 로그인 상태 콜드 스타트 → `FCM 토큰 전송 : success=true, code=2000, message=SUCCESS`
+> - **바디 형식 확정**: `@Body token: String` 이 만드는 따옴표 감싼 JSON 문자열을 서버가 그대로 받는다.
+>   → **Step 3 (`text/plain` 전환) 은 불필요하며 수행하지 않았다.**
+> - 인증 헤더 정상. 401 이 아니었으므로 `TokenInterceptor` 가 제대로 붙였다.
+> - `pm clear` 후 재실행 시 Firebase 가 새 토큰을 발급해 `onNewToken` 이 실제로 발화했고
+>   (`Refreshed token: fGldaOvI...`), accessToken 가드가 요청을 차단했다
+>   (`미로그인 상태이므로 FCM 토큰을 전송하지 않는다`). 네 번째 호출 지점까지 실동작 확인.
+> - Step 2 의 `NetworkModule.kt` 임시 로깅 변경은 **필요 없었다.** `FcmTokenRegister` 가
+>   `res.message` 와 실패 레벨을 분리해 남기므로 `adb logcat -s FCM_TOKEN` 만으로 판정이 끝났다.
+>   바디 원문을 눈으로 봐야 할 때를 위해 절차는 아래에 남겨둔다.
+
+- [x] **Step 1: 앱 설치 후 로그인**
 
 Run: `./gradlew installDebug`
 그리고 실기기에서 로그인한다.
 
-- [ ] **Step 2: 요청 로그 확인**
+- [x] **Step 2: 요청 로그 확인** — 아래 임시 변경 없이 `adb logcat -s FCM_TOKEN` 만으로 확인됨
 
 `data/src/main/java/com/zinc/data/di/NetworkModule.kt` 는 현재 `HttpLoggingInterceptor` 를
 `Level.BASIC` 으로 고정하고 있고, 이 레벨은 요청 라인과 바이트 수만 남기며 바디는 절대 찍지
@@ -447,7 +460,7 @@ Run: `adb logcat -s FCM_TOKEN okhttp.OkHttpClient`
 **확인이 끝나면 `NetworkModule.kt` 를 반드시 원래 상태(Level.BASIC, tokenInterceptor 가 로깅
 인터셉터 다음)로 되돌린다.** 이 변경은 검증용 임시 변경이며 커밋 대상이 아니다.
 
-- [ ] **Step 3: 400/415 응답이면 raw 바디로 전환**
+- [ ] **Step 3: 400/415 응답이면 raw 바디로 전환** — ~~수행 불필요~~ (서버가 JSON 문자열 바디를 수용)
 
 서버가 따옴표 없는 완전 raw 문자열을 요구하는 경우에만 수행한다. `WaverApi.kt` 를 아래로 바꾼다:
 
@@ -476,14 +489,16 @@ import okhttp3.RequestBody.Companion.toRequestBody
 
 `LoginRepository` 인터페이스와 그 위 계층은 그대로다. 변경 후 Step 1-2 를 다시 수행한다.
 
-- [ ] **Step 4: 미로그인 상태 확인**
+- [x] **Step 4: 미로그인 상태 확인**
 
 앱을 삭제 후 재설치하고 로그인하지 않은 채 `adb logcat -s FCM_TOKEN` 을 본다.
+(실제로는 `adb shell pm clear com.zinc.waver` 로 충분했다. 데이터가 지워지면 Firebase 가
+새 토큰을 발급하므로 `onNewToken` 발화까지 함께 확인된다.)
 
 기대: `미로그인 상태이므로 FCM 토큰을 전송하지 않는다` 로그가 보이고,
-`POST /waver/user/fcm-token` 요청은 나가지 않는다.
+`POST /waver/user/fcm-token` 요청은 나가지 않는다. → 확인됨.
 
-- [ ] **Step 5: Step 3 을 수행했다면 커밋**
+- [ ] **Step 5: Step 3 을 수행했다면 커밋** — ~~해당 없음~~
 
 ```bash
 git add data/src/main/java/com/zinc/data/api/WaverApi.kt \
