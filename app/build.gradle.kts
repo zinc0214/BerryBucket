@@ -103,6 +103,8 @@ dependencies {
 
     // test
     testImplementation(libs.test.junit)
+    testImplementation(libs.test.coroutines)
+    testImplementation(libs.test.arch.core)
     androidTestImplementation(libs.test.android.junit)
     androidTestImplementation(libs.test.android.espresso.core)
 
