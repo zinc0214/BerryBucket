@@ -170,7 +170,7 @@ fun WriteScreen2(
                     addFriendsClicked = {
                         selectedFriends.value = it
                         if (!selectedFriends.value.isNullOrEmpty() && selectedOpenType.value == WriteOpenType.PRIVATE) {
-                            selectedOpenType.value = WriteOpenType.PUBLIC
+                            selectedOpenType.value = WriteOpenType.FRIENDS_OPEN
                             Toast.makeText(
                                 context,
                                 R.string.optionIfFriendsNotEmptyOpenPrivateDetect,
@@ -234,7 +234,7 @@ fun WriteScreen2(
                         optionScreenShow = null
                     },
                     typeSelected = {
-                        if (!selectedFriends.value.isNullOrEmpty() && it == WriteOpenType.FRIENDS_OPEN) {
+                        if (selectedFriends.value.isNullOrEmpty() && it == WriteOpenType.FRIENDS_OPEN) {
                             Toast.makeText(
                                 context,
                                 R.string.optionIfHasNoFriends,
@@ -242,11 +242,11 @@ fun WriteScreen2(
                             ).show()
                         } else {
                             selectedOpenType.value = it
+                            if (it == WriteOpenType.PRIVATE) {
+                                isScrapUsed.value = false
+                            }
                         }
                         optionScreenShow = null
-                        isScrapUsed.value = it != WriteOpenType.PRIVATE
-                        friendOption.value.enableType =
-                            if (it == WriteOpenType.PRIVATE) FRIENDS.EnableType.Disable else friendOption.value.enableType
                     }
                 )
             }
@@ -410,7 +410,7 @@ private fun WriteScreen2ContentView(
 
             WriteScrapOptionView(
                 modifier = Modifier.fillMaxWidth(),
-                isScrapAvailable = selectedOpenType.value == WriteOpenType.PUBLIC,
+                isScrapAvailable = selectedOpenType.value != WriteOpenType.PRIVATE,
                 isScrapUsed = isScrapUsed,
                 scrapChanged = scrapChanged
             )

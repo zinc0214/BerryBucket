@@ -171,7 +171,7 @@ fun parseUIBucketListInfo(
     isScrapAvailable: Boolean = false
 ) = UIAddBucketListInfo(
     bucketId = bucketId,
-    bucketType = BucketType.ORIGINAL,
+    bucketType = if (tagFriends.isNullOrEmpty()) BucketType.ORIGINAL else BucketType.TOGETHER,
     title = title,
     memo = parseMemo(options),
     images = imageFiles,
