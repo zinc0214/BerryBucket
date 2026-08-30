@@ -115,7 +115,7 @@ private fun TogetherMemberItemView(
             color = Main1,
             shape = RoundedCornerShape(4.dp)
         ),
-        border = BorderStroke(1.dp, if (togetherMember.isSucceed()) Main3 else Gray2),
+        border = BorderStroke(1.dp, if (togetherMember.isSucceed) Main3 else Gray2),
         elevation = 0.5.dp
     ) {
         Row(
@@ -179,7 +179,7 @@ private fun TogetherMemberItemView(
             }
         }
 
-        if (togetherMember.isSucceed()) {
+        if (togetherMember.isSucceed) {
             Box(
                 modifier = Modifier.fillMaxWidth(),
                 contentAlignment = Alignment.TopEnd
@@ -221,7 +221,8 @@ private fun TogetherMemberPreview() {
                     nickName = "누가 죄인인가!",
                     isMine = false,
                     goalCount = 11,
-                    userCount = 11
+                    userCount = 11,
+                    isSucceed = true
                 )
             )
         )

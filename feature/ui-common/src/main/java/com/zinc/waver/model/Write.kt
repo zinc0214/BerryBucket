@@ -240,7 +240,7 @@ fun DetailInfo.toUpdateUiModel(
     writeOpenType = WriteOpenType.PUBLIC, // TODO : 서버
     keyWord = keywords.map { it -> WriteKeyWord(it.code.orEmpty(), it.name) },
     tagFriends = emptyList(), // TODO : 서버
-    isScrapUsed = this.pin.isYes(),
+    isScrapUsed = this.scrapYn.isYes(),
     isForUpdate = true
 )
 

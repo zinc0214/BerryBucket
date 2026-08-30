@@ -46,20 +46,21 @@ fun bucketDetailResponseToUiModel(
         categoryInfo = WriteCategoryInfo(
             id = bucketInfo.category.id, name = bucketInfo.category.name, defaultYn = YesOrNo.Y
         ),
-        isScrap = bucketInfo.pin.isYes(),
+        isScrap = bucketInfo.scrapYn.isYes(),
         status = if (bucketInfo.status == DetailInfo.CompleteStatus.PROGRESS) BucketStatus.PROGRESS else BucketStatus.COMPLETE,
         isMine = isMine
     )
 
-    val togetherInfo = bucketInfo.friendUsers?.takeIf { it.isNotEmpty() }?.let { friends ->
+    val togetherInfo = bucketInfo.friendStatusList?.takeIf { it.isNotEmpty() }?.let { friends ->
         val friendMembers = friends.map { friend ->
             TogetherMember(
                 memberId = friend.id,
                 profileImage = friend.imgUrl.orEmpty(),
                 nickName = friend.name,
                 isMine = false,
-                goalCount = friend.goalCount,
-                userCount = friend.userCount
+                goalCount = bucketInfo.goalCount, // 목표 횟수는 버킷 기준으로 동일
+                userCount = friend.userCount,
+                isSucceed = friend.isSucceed()
             )
         }
         TogetherInfo(
@@ -68,8 +69,9 @@ fun bucketDetailResponseToUiModel(
         )
     }
 
-    val commentInfo = bucketInfo.comment?.let {
-        DetailDescType.CommentInfo(it.size, it.map { comment ->
+    // 차단한 유저의 댓글은 목록과 개수에서 모두 제외한다
+    val commentInfo = bucketInfo.comment?.filterNot { it.isBlocked.isYes() }?.let { comments ->
+        DetailDescType.CommentInfo(comments.size, comments.map { comment ->
             Comment(
                 commentId = comment.id,
                 userId = comment.userId,
