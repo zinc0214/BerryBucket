@@ -1,15 +1,19 @@
 package com.zinc.waver.ui_my.screen.alarm
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -25,6 +29,7 @@ import com.zinc.common.models.PushAlarmType.FOLLOW
 import com.zinc.common.models.PushAlarmType.LIKE
 import com.zinc.common.models.PushAlarmType.NOTICE
 import com.zinc.common.models.PushAlarmType.TOGETHER
+import com.zinc.waver.ui.design.theme.Gray2
 import com.zinc.waver.ui.design.theme.Gray9
 import com.zinc.waver.ui.util.HtmlText
 import com.zinc.waver.ui_my.R
@@ -37,6 +42,8 @@ fun AlarmItemView(
     onClicked: (AlarmClickEvent) -> Unit
 ) {
     val clickEvent = getClickEvent(alarmItem)
+    val hasImageUrl = alarmItem.imgUrl != null
+    val imageShape = RoundedCornerShape(14.dp)
 
     Row(
         modifier = Modifier
@@ -53,10 +60,21 @@ fun AlarmItemView(
         Image(
             // sizeIn(36.dp) 은 minWidth 만 지정돼 최대 크기가 열려 있었다.
             // 폴백 아이콘(intrinsic 80dp)이 그대로 커지지 않도록 36dp 로 고정한다.
-            modifier = Modifier.size(36.dp),
+            modifier = Modifier
+                .size(36.dp)
+                // 이미지 URL 인 경우에만 라운딩 + 테두리를 준다. 타입별 아이콘은 원본 그대로 노출한다.
+                .then(
+                    if (hasImageUrl) {
+                        Modifier
+                            .clip(imageShape)
+                            .border(width = 1.dp, color = Gray2, shape = imageShape)
+                    } else {
+                        Modifier
+                    }
+                ),
             // 이미지 URL이 내려오면 우선 사용하고, 없으면 타입별 아이콘을 사용한다.
             // URL 은 있는데 로드에 실패하면 빈 프로필 아이콘으로 대체한다.
-            painter = if (alarmItem.imgUrl != null) {
+            painter = if (hasImageUrl) {
                 rememberAsyncImagePainter(
                     model = alarmItem.imgUrl,
                     error = painterResource(CommonR.drawable.profile_icon_blank),
@@ -65,6 +83,8 @@ fun AlarmItemView(
             } else {
                 painterResource(getAlarmIcon(alarmItem.type))
             },
+            // 비율이 다른 이미지가 와도 라운딩된 영역을 꽉 채우도록 한다.
+            contentScale = if (hasImageUrl) ContentScale.Crop else ContentScale.Fit,
             contentDescription = stringResource(R.string.alarmIconDesc)
         )
 
