@@ -40,6 +40,7 @@ import com.zinc.waver.ui.presentation.component.dialog.CommonDialogView
 import com.zinc.waver.ui.presentation.component.profile.ProfileEditView
 import com.zinc.waver.ui.presentation.component.profile.ProfileUpdateView
 import com.zinc.waver.ui.presentation.model.ActionWithActivity
+import com.zinc.waver.ui.presentation.model.NicknameCheckState
 import com.zinc.waver.ui.presentation.model.ProfileEditData
 import com.zinc.waver.ui.util.isValidNicknameCheck
 import com.zinc.waver.ui_more.R
@@ -64,14 +65,14 @@ fun ProfileSettingScreen(
     val loadProfileFail by viewModel.profileLoadFail.observeAsState()
     val profileUpdateSucceedAsSate by viewModel.profileUpdateSucceed.observeAsState()
     val profileUpdateFailAsState by viewModel.profileUpdateFail.observeAsState()
-    val checkAlreadyUsedNickname by viewModel.isAlreadyUsedNickName.observeAsState()
+    val nicknameCheckState by viewModel.nicknameCheckState
+        .observeAsState(NicknameCheckState.Idle)
 
     val profileInfo = remember { mutableStateOf(profileInfoAsState) }
     val isDataChanged = remember { mutableStateOf(false) }
     val showApiFailDialog = remember { mutableStateOf(false) }
     val showUpdateSucceedDialog = remember { mutableStateOf(false) }
     val showUpdateFailDialog = remember { mutableStateOf(false) }
-    val isAlreadyUsedNickname = remember { mutableStateOf(false) }
 
     val updateImagePath: MutableState<String?> = remember { mutableStateOf(null) }
     val updateImageFile: MutableState<File?> = remember { mutableStateOf(null) }
@@ -113,19 +114,6 @@ fun ProfileSettingScreen(
 
     LaunchedEffect(key1 = profileUpdateFailAsState) {
         showUpdateFailDialog.value = profileUpdateFailAsState ?: false
-    }
-
-    LaunchedEffect(key1 = checkAlreadyUsedNickname) {
-        isAlreadyUsedNickname.value = checkAlreadyUsedNickname ?: false
-        if (checkAlreadyUsedNickname == false) {
-            viewModel.updateMyProfile(
-                name = nickNameData.value.prevText,
-                bio = bioData.value.prevText,
-                profileImage = updateImageFile.value
-            )
-        } else {
-            isDataChanged.value = false
-        }
     }
 
     LaunchedEffect(key1 = profileInfoAsState) {
@@ -304,20 +292,20 @@ fun ProfileSettingScreen(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 ProfileSettingTitle(
-                    saveButtonEnable = isDataChanged.value && isValidNicknameCheck(nickNameData.value.prevText),
+                    saveButtonEnable = isDataChanged.value &&
+                            isValidNicknameCheck(nickNameData.value.prevText) &&
+                            nicknameCheckState !is NicknameCheckState.Checking,
                     backClicked = {
                         onBackPressed()
                     },
                     saveClicked = {
-                        if (profile.name != nickNameData.value.prevText) {
-                            viewModel.checkIsAlreadyUsedName(nickNameData.value.prevText)
-                        } else {
-                            viewModel.updateMyProfile(
-                                name = nickNameData.value.prevText,
-                                bio = bioData.value.prevText,
-                                profileImage = updateImageFile.value
-                            )
-                        }
+                        viewModel.updateMyProfile(
+                            name = nickNameData.value.prevText,
+                            bio = bioData.value.prevText,
+                            profileImage = updateImageFile.value,
+                            // 닉네임을 바꾼 경우에만 중복 검사를 거친다.
+                            needNicknameCheck = profile.name != nickNameData.value.prevText
+                        )
                     }
                 )
 
@@ -338,7 +326,8 @@ fun ProfileSettingScreen(
                     dataChanged = { changedData ->
                         nickNameData.value = nickNameData.value.copy(prevText = changedData)
                     },
-                    isAlreadyUsedName = isAlreadyUsedNickname.value
+                    isAlreadyUsedName = nicknameCheckState
+                        .isDuplicatedFor(nickNameData.value.prevText)
                 )
 
                 ProfileEditView(
@@ -378,7 +367,7 @@ fun ProfileSettingScreen(
         ApiFailDialog(
             message = stringResource(id = R.string.profileUpdateFailTitle),
             dismissEvent = {
-                showApiFailDialog.value = false
+                showUpdateFailDialog.value = false
             })
     }
 }

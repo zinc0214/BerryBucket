@@ -9,7 +9,7 @@ import com.zinc.domain.models.GoogleEmailInfo
 import com.zinc.domain.usecases.login.CreateProfile
 import com.zinc.domain.usecases.login.LoginByEmail
 import com.zinc.domain.usecases.more.CheckAlreadyUsedNickname
-import com.zinc.waver.ui.presentation.login.model.NicknameCheckState
+import com.zinc.waver.ui.presentation.model.NicknameCheckState
 import com.zinc.waver.ui.viewmodel.CommonViewModel
 import com.zinc.waver.util.FcmTokenRegister
 import com.zinc.waver.util.SingleLiveEvent

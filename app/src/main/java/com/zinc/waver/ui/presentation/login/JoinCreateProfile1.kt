@@ -59,7 +59,7 @@ import com.zinc.waver.ui.presentation.component.MyTextField
 import com.zinc.waver.ui.presentation.component.TitleView
 import com.zinc.waver.ui.presentation.component.profile.ProfileUpdateView
 import com.zinc.waver.ui.presentation.login.model.CreateProfileInfo
-import com.zinc.waver.ui.presentation.login.model.NicknameCheckState
+import com.zinc.waver.ui.presentation.model.NicknameCheckState
 import com.zinc.waver.ui.presentation.model.ActionWithActivity
 import com.zinc.waver.ui.util.dpToSp
 import com.zinc.waver.ui.util.isValidNicknameCheck

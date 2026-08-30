@@ -1,7 +1,7 @@
-package com.zinc.waver.ui.presentation.login.model
+package com.zinc.waver.ui.presentation.model
 
 /**
- * 닉네임 중복 검사 결과.
+ * 닉네임 중복 검사 결과. 가입 2단계와 프로필 수정 화면이 공유한다.
  *
  * 검사한 닉네임을 결과에 함께 담는다. 결과만 들고 있으면 "언젠가 어떤 닉네임이 통과했다"와
  * "지금 입력된 닉네임이 통과했다"를 구분할 수 없어, 닉네임을 바꾼 뒤에도 검사 없이 통과한다.

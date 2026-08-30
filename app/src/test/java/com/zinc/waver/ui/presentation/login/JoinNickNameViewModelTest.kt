@@ -24,7 +24,7 @@ import com.zinc.domain.repository.MoreRepository
 import com.zinc.domain.usecases.login.CreateProfile
 import com.zinc.domain.usecases.login.LoginByEmail
 import com.zinc.domain.usecases.more.CheckAlreadyUsedNickname
-import com.zinc.waver.ui.presentation.login.model.NicknameCheckState
+import com.zinc.waver.ui.presentation.model.NicknameCheckState
 import com.zinc.waver.util.FcmTokenRegister
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
