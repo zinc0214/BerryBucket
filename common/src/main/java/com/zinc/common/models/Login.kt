@@ -79,3 +79,7 @@ data class CheckUserStatusResponse(
         WITHDRAWN
     }
 }
+
+data class FcmTokenRequest(
+    val fcmToken: String
+) : Serializable

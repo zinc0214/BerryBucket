@@ -2,7 +2,6 @@ package com.zinc.data.api
 
 import com.zinc.common.models.AddBucketCommentRequest
 import com.zinc.common.models.AddNewCategoryRequest
-import com.zinc.common.models.MyPushResponse
 import com.zinc.common.models.AllBucketListResponse
 import com.zinc.common.models.AllBucketListSortType
 import com.zinc.common.models.BucketDetailResponse
@@ -13,6 +12,7 @@ import com.zinc.common.models.CheckUserStatusResponse
 import com.zinc.common.models.CommonResponse
 import com.zinc.common.models.CommonResponse2
 import com.zinc.common.models.EditCategoryNameRequest
+import com.zinc.common.models.FcmTokenRequest
 import com.zinc.common.models.FollowResponse
 import com.zinc.common.models.HomeProfileResponse
 import com.zinc.common.models.JoinResponse
@@ -23,6 +23,7 @@ import com.zinc.common.models.LoadMyWaveInfoResponse
 import com.zinc.common.models.LoadTokenByEmailRequest
 import com.zinc.common.models.LoadTokenByEmailResponse
 import com.zinc.common.models.LoadWriteSelectableFriendsResponse
+import com.zinc.common.models.MyPushResponse
 import com.zinc.common.models.ProfileResponse
 import com.zinc.common.models.RefreshTokenResponse
 import com.zinc.common.models.ReorderedCategoryRequest
@@ -77,7 +78,7 @@ interface WaverApi {
 
     // FCM 토큰 등록 (푸시 알림 수신용)
     @POST("/waver/user/fcm-token")
-    suspend fun updateFcmToken(@Body token: String): CommonResponse2
+    suspend fun updateFcmToken(@Body token: FcmTokenRequest): CommonResponse2
 
     // 이메일 상태 조회
     @POST("/waver/user/status")

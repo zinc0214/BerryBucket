@@ -4,6 +4,7 @@ import com.zinc.common.models.CheckUserStatusRequest
 import com.zinc.common.models.CheckUserStatusResponse
 import com.zinc.common.models.CommonResponse2
 import com.zinc.common.models.CreateProfileRequest
+import com.zinc.common.models.FcmTokenRequest
 import com.zinc.common.models.JoinResponse
 import com.zinc.common.models.LoadTokenByEmailRequest
 import com.zinc.common.models.LoadTokenByEmailResponse
@@ -47,6 +48,6 @@ class LoginRepositoryImpl @Inject constructor(
     }
 
     override suspend fun updateFcmToken(token: String): CommonResponse2 {
-        return waverApi.updateFcmToken(token)
+        return waverApi.updateFcmToken(FcmTokenRequest(token))
     }
 }
