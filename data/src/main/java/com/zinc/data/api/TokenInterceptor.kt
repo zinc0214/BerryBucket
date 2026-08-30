@@ -1,6 +1,5 @@
 package com.zinc.data.api
 
-import android.util.Log
 import com.zinc.datastore.login.PreferenceDataStoreModule
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
@@ -14,8 +13,8 @@ class TokenInterceptor @Inject constructor(
 ) : Interceptor {
     override fun intercept(chain: Interceptor.Chain): Response {
         return runBlocking {
+            // accessToken 은 절대 로그로 남기지 않는다. minify 가 꺼져 있어 릴리스 빌드에도 그대로 출력된다.
             val accessToken = preferenceDataStoreModule.loadAccessToken.first()
-            Log.e("ayhan", "AcceesToken : $accessToken")
             val request = if (accessToken.isNotEmpty()) {
                 chain.request().putTokenHeader(accessToken)
             } else {
