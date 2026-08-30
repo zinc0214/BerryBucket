@@ -10,7 +10,6 @@ import com.zinc.waver.ui.viewmodel.CommonViewModel
 import com.zinc.waver.util.FcmTokenRegister
 import com.zinc.waver.util.SingleLiveEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -39,13 +38,16 @@ class LoginViewModel @Inject constructor(
         isLoginChecked = true
         _needToStartJoin.value = false
         viewModelScope.launch {
-            // 한 번만 확인하면 되는 값이다. collect 로 계속 구독하면 이후 DataStore 쓰기마다 다시 발화한다.
-            val savedUid = preferenceDataStoreModule.loadLoginedEmailUid.first()
-            if (savedUid.isNotEmpty()) {
-                _needToStartLoadToken.value = savedUid
-            } else {
-                // uid 가 없으면 로그인할 수단이 없다. 빈 uid 로 토큰을 요청하면 반드시 실패한다.
-                _needToStartJoin.value = true
+            // 한 번만 읽으면 안 된다. 가입 화면에서 "로그인하러 가기"를 누르면 uid 가 그때 저장되는데,
+            // 이 구독이 그 값을 받아 로그인으로 이어주는 유일한 경로다.
+            preferenceDataStoreModule.loadLoginedEmailUid.collect { savedUid ->
+                if (savedUid.isNotEmpty()) {
+                    _needToStartJoin.value = false
+                    _needToStartLoadToken.value = savedUid
+                } else {
+                    // uid 가 없으면 로그인할 수단이 없다. 빈 uid 로 토큰을 요청하면 반드시 실패한다.
+                    _needToStartJoin.value = true
+                }
             }
         }
     }
