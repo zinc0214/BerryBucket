@@ -1,6 +1,5 @@
 package com.zinc.waver.ui.presentation.login
 
-import android.util.Log
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Scaffold
@@ -19,7 +18,6 @@ import com.zinc.waver.ui.presentation.component.dialog.ApiFailDialog
 
 @Composable
 fun LoginScreen(
-    retryLoginEmail: String = "",
     goToMainHome: () -> Unit,
     goToJoin: () -> Unit,
     goToFinish: () -> Unit
@@ -33,11 +31,13 @@ fun LoginScreen(
 
     val needToShowLoginFailDialog = remember { mutableStateOf(isLoginFailAsState) }
     val needToShowJoinDialog = remember { mutableStateOf(goToJoinAsState) }
-    val currentEmail = remember { mutableStateOf(needToStartLoadTokenAsState) }
     val isAnimFinished = remember { mutableStateOf(false) }
 
-    if (!viewModel.isLoginChecked) {
-        viewModel.checkHasLoginEmail(retryLoginEmail)
+    // 컴포지션 도중에 호출하면 리컴포지션마다 부수효과가 새어나간다.
+    LaunchedEffect(Unit) {
+        if (!viewModel.isLoginChecked) {
+            viewModel.checkHasLoginEmail()
+        }
     }
 
     LaunchedEffect(key1 = canGoToMainAsState, key2 = isAnimFinished.value) {
@@ -62,12 +62,7 @@ fun LoginScreen(
 
     LaunchedEffect(key1 = needToStartLoadTokenAsState) {
         needToStartLoadTokenAsState?.let {
-            Log.e(
-                "ayhan",
-                "needToStartLoadTokenAsState : $it,  currentEmail : ${currentEmail.value}"
-            )
             viewModel.loadLoginToken(it)
-            currentEmail.value = it
         }
     }
 
@@ -93,8 +88,11 @@ fun LoginScreen(
             }
         }
 
-        if (needToShowJoinDialog.value == true) {
-            goToJoin()
+        // 컴포지션 도중 화면을 전환하면 상태 변경이 컴포지션과 뒤엉킨다.
+        LaunchedEffect(needToShowJoinDialog.value) {
+            if (needToShowJoinDialog.value == true) {
+                goToJoin()
+            }
         }
     }
 }

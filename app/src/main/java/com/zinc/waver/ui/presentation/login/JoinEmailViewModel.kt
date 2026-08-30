@@ -8,7 +8,6 @@ import com.zinc.common.models.CheckUserStatusResponse
 import com.zinc.datastore.login.PreferenceDataStoreModule
 import com.zinc.domain.models.GoogleEmailInfo
 import com.zinc.domain.usecases.login.CheckUserStatus
-import com.zinc.domain.usecases.login.CreateProfile
 import com.zinc.domain.usecases.login.LoginByEmail
 import com.zinc.waver.ui.viewmodel.CommonViewModel
 import com.zinc.waver.util.FcmTokenRegister
@@ -20,7 +19,6 @@ import javax.inject.Inject
 @HiltViewModel
 class JoinEmailViewModel @Inject constructor(
     private val loginByEmail: LoginByEmail,
-    private val createProfile: CreateProfile,
     private val checkUserState: CheckUserStatus,
     private val preferenceDataStoreModule: PreferenceDataStoreModule,
     private val fcmTokenRegister: FcmTokenRegister,
@@ -45,10 +43,9 @@ class JoinEmailViewModel @Inject constructor(
         viewModelScope.launch(ceh(_failEmailCheck, true)) {
             _failEmailCheck.value = false
             val res = loginByEmail(emailInfo.uid)
-            if (res.success) {
-                res.data.accessToken.let { token ->
-                    preferenceDataStoreModule.setAccessToken("Bearer $token")
-                }
+            val token = res.data?.accessToken
+            if (res.success && token != null) {
+                preferenceDataStoreModule.setAccessToken("Bearer $token")
                 // accessToken 저장 이후여야 한다. TokenInterceptor 가 DataStore 에서 읽어 헤더를 붙인다.
                 fcmTokenRegister.register()
                 _isAlreadyUsedEmail.value = true
@@ -66,18 +63,22 @@ class JoinEmailViewModel @Inject constructor(
                 email = emailInfo.email
             )
             val res = checkUserState(request)
-            if (res.success) {
-                when (res.data.status) {
-                    CheckUserStatusResponse.Status.ACTIVE -> {
-                        _isAlreadyUsedEmail.value = true
-                    }
-
-                    CheckUserStatusResponse.Status.WITHDRAWN -> {
-                        _isDeletedUser.value = true
-                    }
+            when {
+                !res.success -> {
+                    // 서버가 상태를 판단하지 못한 경우. 로그인을 시도해 계정 존재 여부로 갈음한다.
+                    goToLogin(emailInfo)
                 }
-            } else {
-                goToLogin(emailInfo)
+
+                res.data?.status == CheckUserStatusResponse.Status.ACTIVE -> {
+                    _isAlreadyUsedEmail.value = true
+                }
+
+                res.data?.status == CheckUserStatusResponse.Status.WITHDRAWN -> {
+                    _isDeletedUser.value = true
+                }
+
+                // data 누락이거나 앱이 모르는 상태값. 같은 경로로 흘려보낸다.
+                else -> goToLogin(emailInfo)
             }
         }
     }

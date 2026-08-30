@@ -1,6 +1,5 @@
 package com.zinc.waver.ui.presentation.login
 
-import android.util.Log
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
@@ -34,8 +33,6 @@ fun JoinScreen(
 
     var isFirstCreate by remember { mutableStateOf(false) }
     var createProfileInfo by remember { mutableStateOf(CreateProfileInfo()) }
-
-    Log.e("ayhan", "createProfileInfo : $createProfileInfo")
 
     val joinTryEmail: MutableState<GoogleEmailInfo?> = remember { mutableStateOf(null) }
 

@@ -38,10 +38,7 @@ import androidx.credentials.CredentialManager
 import androidx.credentials.CustomCredential
 import androidx.credentials.GetCredentialRequest
 import androidx.credentials.GetCredentialResponse
-import androidx.credentials.PasswordCredential
-import androidx.credentials.PublicKeyCredential
 import androidx.credentials.exceptions.GetCredentialCancellationException
-import androidx.credentials.exceptions.GetCredentialCustomException
 import androidx.credentials.exceptions.GetCredentialException
 import androidx.credentials.exceptions.NoCredentialException
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -137,7 +134,6 @@ fun JoinEmailScreen(
             },
             rightButtonEvent = {
                 isAlreadyUsedEmail.value = false
-                Log.e("ayhan", "goToLogin : ${prevLoginEmail.value}")
                 prevLoginEmail.value?.let { viewModel.savedLoginEmail(it) }
             }
         )
@@ -147,7 +143,6 @@ fun JoinEmailScreen(
             title = stringResource(id = R.string.joinFailTitle),
             message = stringResource(id = R.string.loginRetry)
         ) {
-            Log.e("ayhan", "api Faaaaaa")
             isFailApi.value = false
         }
     }
@@ -237,48 +232,6 @@ private fun EmailView(modifier: Modifier, emailClicked: () -> Unit) {
     }
 }
 
-//This code will not work on Android versions < UPSIDE_DOWN_CAKE when GetCredentialException is
-//is thrown.
-suspend fun signIn(
-    request: GetCredentialRequest,
-    context: Context,
-    goToEmailCheck: (GoogleEmailInfo) -> Unit
-): Exception? {
-    val credentialManager = CredentialManager.create(context)
-    val failureMessage = "Sign in failed!"
-    val e: Exception? = null
-    //using delay() here helps prevent NoCredentialException when the BottomSheet Flow is triggered
-    //on the initial running of our app
-    try {
-        // The getCredential is called to request a credential from Credential Manager.
-        val result = credentialManager.getCredential(
-            request = request,
-            context = context,
-        )
-        Log.i("ayhan", "(☞ﾟヮﾟ)☞  Sign in Successful!  ☜(ﾟヮﾟ☜)")
-
-        handleSignIn(result, goToEmailCheck)
-
-    } catch (e: GetCredentialException) {
-        Log.e("ayhan", "$failureMessage: Failure getting credentials", e)
-        return e
-
-    } catch (e: GoogleIdTokenParsingException) {
-        Log.e("ayhan", "$failureMessage: Issue with parsing received GoogleIdToken", e)
-
-    } catch (e: NoCredentialException) {
-        Log.e("ayhan", "$failureMessage: No credentials found", e)
-        return e
-
-    } catch (e: GetCredentialCustomException) {
-        Log.e("ayhan", "$failureMessage: Issue with custom credential request", e)
-
-    } catch (e: GetCredentialCancellationException) {
-        Log.e("ayhan", "$failureMessage: Sign-in was cancelled", e)
-    }
-    return e
-}
-
 @Composable
 fun GoogleSignInButton(goToEmailCheck: (GoogleEmailInfo) -> Unit) {
     val context = LocalContext.current
@@ -299,12 +252,20 @@ fun GoogleSignInButton(goToEmailCheck: (GoogleEmailInfo) -> Unit) {
                     context = context,
                     request = request
                 )
-                handleSignIn(result, goToEmailCheck)
+                handleSignIn(
+                    result = result,
+                    goToEmailCheck = goToEmailCheck,
+                    onFailed = { showError = it })
+            } catch (e: GetCredentialCancellationException) {
+                // 사용자가 직접 닫은 것이므로 오류로 알리지 않는다.
+                Log.i("ayhan", "sign-in cancelled", e)
             } catch (e: NoCredentialException) {
                 Log.i("ayhan", "NoCredentialException: ", e)
-                handleNoCredentialException(context, goToEmailCheck)
+                showError = handleNoCredentialException(context, goToEmailCheck)
             } catch (e: GetCredentialException) {
                 Log.i("ayhan", "GetCredentialException: ", e)
+                // 실패를 삼키면 버튼을 눌러도 화면이 그대로 멈춰 있어 사용자가 원인을 알 수 없다.
+                showError = e.message.orEmpty()
             }
 
             showGoogleEmailSelect = false
@@ -328,10 +289,12 @@ fun GoogleSignInButton(goToEmailCheck: (GoogleEmailInfo) -> Unit) {
 }
 
 
+/** @return 사용자에게 보여줄 실패 사유. 성공했거나 사용자가 취소했으면 빈 문자열. */
 private suspend fun handleNoCredentialException(
     context: Context,
     goToEmailCheck: (GoogleEmailInfo) -> Unit
-) {
+): String {
+    var failMessage = ""
     try {
         val signInWithGoogleOption = GetSignInWithGoogleOption
             .Builder(serverClientId = GoogleWebClientId)
@@ -343,62 +306,63 @@ private suspend fun handleNoCredentialException(
             context = context,
             request = request
         )
-        handleSignIn(result, goToEmailCheck)
+        handleSignIn(
+            result = result,
+            goToEmailCheck = goToEmailCheck,
+            onFailed = { failMessage = it })
+    } catch (e: GetCredentialCancellationException) {
+        Log.i("ayhan", "sign-in cancelled", e)
     } catch (e: Exception) {
         Log.e("ayhan", "handleNoCredentialException: ", e)
+        failMessage = e.message.orEmpty()
     }
+    return failMessage
 }
 
-fun handleSignIn(result: GetCredentialResponse, goToEmailCheck: (GoogleEmailInfo) -> Unit) {
+/**
+ * 자격증명을 [GoogleEmailInfo] 로 바꿔 [goToEmailCheck] 에 넘긴다.
+ *
+ * 자격증명(idToken, 비밀번호)은 절대 로그로 남기지 않는다. minify 가 꺼져 있어 릴리스 빌드에도
+ * 그대로 출력되고, idToken 은 유효기간 안에서 재사용 가능한 인증 수단이다.
+ */
+fun handleSignIn(
+    result: GetCredentialResponse,
+    goToEmailCheck: (GoogleEmailInfo) -> Unit,
+    onFailed: (String) -> Unit = {}
+) {
     // Handle the successfully returned credential.
-    val credential = result.credential
-    val responseJson: String
-
-    when (credential) {
-
-        // Passkey credential
-        is PublicKeyCredential -> {
-            // Share responseJson such as a GetCredentialResponse to your server to validate and
-            // authenticate
-            responseJson = credential.authenticationResponseJson
-            Log.e("ayhan", "PublicKeyCredential responseJson : $responseJson")
-        }
-
-        // Password credential
-        is PasswordCredential -> {
-            // Send ID and password to your server to validate and authenticate.
-            val username = credential.id
-            val password = credential.password
-            Log.e("ayhan", "PasswordCredential username : $username, password : $password")
-        }
+    when (val credential = result.credential) {
 
         // GoogleIdToken credential
         is CustomCredential -> {
-            if (credential.type == GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL) {
-                try {
-                    val googleIdTokenCredential =
-                        GoogleIdTokenCredential.createFrom(credential.data)
-                    val idToken = googleIdTokenCredential.idToken
-                    val email = googleIdTokenCredential.id
-                    val decodedString = decodeGoogleIdToken(idToken)
-
-                    Log.e(
-                        "ayhan",
-                        "GoogleIdToken idToken : $idToken \n email : $email \n decodedString : $decodedString"
-                    )
-                    goToEmailCheck(GoogleEmailInfo(email = email, uid = decodedString))
-                } catch (e: GoogleIdTokenParsingException) {
-                    Log.e("ayhan", "Received an invalid google id token response", e)
-                }
-            } else {
-                // Catch any unrecognized custom credential type here.
+            if (credential.type != GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL) {
                 Log.e("ayhan", "Unexpected type of credential")
+                onFailed("Unexpected type of credential")
+                return
+            }
+            try {
+                val googleIdTokenCredential =
+                    GoogleIdTokenCredential.createFrom(credential.data)
+                val email = googleIdTokenCredential.id
+                val uid = decodeGoogleIdToken(googleIdTokenCredential.idToken)
+
+                // uid 는 계정 식별자다. 빈 값으로 진행하면 uid 없는 계정이 서버에 생성된다.
+                if (uid.isEmpty()) {
+                    Log.e("ayhan", "Failed to extract uid from google id token")
+                    onFailed("Invalid google id token")
+                    return
+                }
+                goToEmailCheck(GoogleEmailInfo(email = email, uid = uid))
+            } catch (e: GoogleIdTokenParsingException) {
+                Log.e("ayhan", "Received an invalid google id token response", e)
+                onFailed(e.message.orEmpty())
             }
         }
 
         else -> {
-            // Catch any unrecognized credential type here.
+            // 이 화면은 구글 계정 가입만 지원한다. 그 외 자격증명은 처리하지 않는다.
             Log.e("ayhan", "Unexpected type of credential")
+            onFailed("Unexpected type of credential")
         }
     }
 }

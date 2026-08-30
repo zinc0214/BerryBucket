@@ -119,9 +119,6 @@ class HomeActivity : AppCompatActivity(),
         setContent {
             enableEdgeToEdge()
 
-            val retryEmail: MutableState<String> = remember {
-                mutableStateOf("")
-            }
             val showScreenType: MutableState<ShowParentScreenType> =
                 remember {
                     mutableStateOf(ShowParentScreenType.Login)
@@ -148,7 +145,7 @@ class HomeActivity : AppCompatActivity(),
                     }, goToBack = {
                         finish()
                     }, goToLogin = {
-                        retryEmail.value = it.email
+                        // 로그인에 필요한 uid 는 이미 DataStore 에 저장돼 있다. 여기서 따로 넘길 값이 없다.
                         showScreenType.value =
                             ShowParentScreenType.Login
                     },
@@ -164,7 +161,6 @@ class HomeActivity : AppCompatActivity(),
 
                 ShowParentScreenType.Login -> {
                     LoginScreen(
-                        retryLoginEmail = retryEmail.value,
                         goToMainHome = {
                             showScreenType.value =
                                 ShowParentScreenType.Main

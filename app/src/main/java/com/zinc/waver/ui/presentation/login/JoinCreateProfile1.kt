@@ -4,7 +4,6 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.drawable.Drawable
-import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -60,6 +59,7 @@ import com.zinc.waver.ui.presentation.component.MyTextField
 import com.zinc.waver.ui.presentation.component.TitleView
 import com.zinc.waver.ui.presentation.component.profile.ProfileUpdateView
 import com.zinc.waver.ui.presentation.login.model.CreateProfileInfo
+import com.zinc.waver.ui.presentation.login.model.NicknameCheckState
 import com.zinc.waver.ui.presentation.model.ActionWithActivity
 import com.zinc.waver.ui.util.dpToSp
 import com.zinc.waver.ui.util.isValidNicknameCheck
@@ -95,47 +95,40 @@ fun JoinCreateProfile1(
 ) {
     val createUserViewModel: JoinNickNameViewModel = hiltViewModel()
 
-    val isAlreadyUsedNickNameAsState by createUserViewModel.isAlreadyUsedNickName.observeAsState()
-    val isCheckFail by createUserViewModel.failCheckNickname.observeAsState()
-    var savedCreateInfo: CreateProfileInfo? by remember { mutableStateOf(null) }
+    val checkState by createUserViewModel.nicknameCheckState
+        .observeAsState(NicknameCheckState.Idle)
 
+    // 검사가 비동기라, 검사를 요청한 시점의 입력값을 들고 있다가 결과가 오면 그대로 넘긴다.
+    var pendingCreateInfo: CreateProfileInfo? by remember { mutableStateOf(null) }
     var nickNameData by remember { mutableStateOf(createProfileInfo.nickName) }
-    var checkedNickName by remember { mutableStateOf("") }
-    var isAlreadyUsedNickName by remember { mutableStateOf(false) }
 
-
-    LaunchedEffect(isAlreadyUsedNickNameAsState) {
-        isAlreadyUsedNickName = isAlreadyUsedNickNameAsState == true
-
-        if (isAlreadyUsedNickNameAsState == false) {
-            savedCreateInfo?.let {
-                goToNext(it)
-            }
-        } else {
-            savedCreateInfo = null
+    LaunchedEffect(checkState, pendingCreateInfo) {
+        val pending = pendingCreateInfo ?: return@LaunchedEffect
+        if (checkState.isAvailableFor(pending.nickName)) {
+            pendingCreateInfo = null
+            goToNext(pending)
+        } else if (checkState !is NicknameCheckState.Checking) {
+            // 중복이거나 검사 실패. 대기 중이던 입력값을 버리고 화면에 오류만 남긴다.
+            pendingCreateInfo = null
         }
-        checkedNickName = nickNameData
-    }
-
-    LaunchedEffect(nickNameData) {
-        isAlreadyUsedNickName = nickNameData != checkedNickName
     }
 
     JoinCreateProfile1(
-        isAlreadyUsedNickName = isAlreadyUsedNickName,
+        isAlreadyUsedNickName = checkState.isDuplicatedFor(nickNameData),
+        isCheckFail = checkState is NicknameCheckState.Failed,
+        isChecking = checkState is NicknameCheckState.Checking,
         goToNext = {
-            savedCreateInfo = it
-
-            if (isAlreadyUsedNickNameAsState == false) {
+            // 지금 입력된 닉네임이 통과한 경우에만 검사를 건너뛴다.
+            // 결과만 보고 판단하면 2단계에서 뒤로 온 뒤 닉네임을 바꿔도 검사 없이 통과한다.
+            if (checkState.isAvailableFor(it.nickName)) {
                 goToNext(it)
             } else {
+                pendingCreateInfo = it
                 createUserViewModel.checkIsAlreadyUsedName(it.nickName)
             }
         },
-        isCheckFail = isCheckFail ?: false,
         createProfileInfo = createProfileInfo,
         nickNameData = nickNameData,
-        checkedNickName = checkedNickName,
         updateNickName = {
             nickNameData = it
         },
@@ -147,9 +140,9 @@ fun JoinCreateProfile1(
 private fun JoinCreateProfile1(
     isAlreadyUsedNickName: Boolean,
     isCheckFail: Boolean,
+    isChecking: Boolean,
     createProfileInfo: CreateProfileInfo,
     nickNameData: String,
-    checkedNickName: String,
     updateNickName: (String) -> Unit,
     addImageAction: (ActionWithActivity.AddImage) -> Unit,
     goToNext: (CreateProfileInfo) -> Unit,
@@ -163,10 +156,9 @@ private fun JoinCreateProfile1(
     val updateImagePath: MutableState<String?> =
         remember { mutableStateOf(createProfileInfo.imgPath) }
 
+    // 검사 결과로 버튼을 잠그지 않는다. 잠그면 검사 후 진행에 실패했을 때 빠져나갈 길이 없다.
     val isButtonEnabled =
-        (if (checkedNickName.isNotEmpty()) nickNameData != checkedNickName else true) && nickNameData.isNotEmpty() && nickNameData.length > 2 && isValidNicknameCheck(
-            nickNameData
-        )
+        !isChecking && nickNameData.length > 2 && isValidNicknameCheck(nickNameData)
     val bottomSheetScaffoldState = rememberModalBottomSheetState(
         initialValue = ModalBottomSheetValue.Hidden, skipHalfExpanded = true
     )
@@ -186,6 +178,10 @@ private fun JoinCreateProfile1(
     }
 
     LaunchedEffect(Unit) {
+        // 이미 이미지가 있으면(사용자 선택 또는 이전 진입에서 지정한 기본값) 건드리지 않는다.
+        // 가드가 없으면 2단계에서 뒤로 왔을 때 고른 사진이 랜덤 기본값으로 덮인다.
+        if (updateImageFile.value != null) return@LaunchedEffect
+
         val randomProfile = listOf(
             CommonR.drawable.profile_icon_1,
             CommonR.drawable.profile_icon_2,
@@ -203,7 +199,6 @@ private fun JoinCreateProfile1(
                 null
             }
 
-            Log.e("ayhan", "randomProfile : $randomProfile , $uri , $file")
             if (file != null) {
                 // 파일에서 비트맵 디코드가 가능한지 확인
                 val decoded = try {
@@ -283,7 +278,6 @@ private fun JoinCreateProfile1(
                                 showSelectCameraType = false
                             },
                             succeed = { imageInfo ->
-                                Log.e("ayhan", "imageInfo : $imageInfo")
                                 showSelectCameraType = false
                                 updateImagePath.value = imageInfo.path
                                 updateImageFile.value = imageInfo.file
@@ -318,7 +312,7 @@ private fun JoinCreateProfile1(
 
             ProfileNickNameEditView(
                 prevNickName = nickNameData,
-                isAlreadyUsedName = isAlreadyUsedNickName && nickNameData == checkedNickName,
+                isAlreadyUsedName = isAlreadyUsedNickName,
                 isCheckFail = isCheckFail,
                 dataChanged = {
                     updateNickName(it)
@@ -442,7 +436,7 @@ private fun JoinNickNameScreenPreview() {
         goToNext = { },
         isAlreadyUsedNickName = false,
         isCheckFail = false,
-        checkedNickName = "",
+        isChecking = false,
         updateNickName = {},
         addImageAction = {})
 }

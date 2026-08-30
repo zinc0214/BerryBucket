@@ -47,7 +47,8 @@ data class LoadTokenByEmailRequest(
 )
 
 data class LoadTokenByEmailResponse(
-    val data: AccessTokenDto,
+    // 실패 응답에는 data 가 실려오지 않는다. 논널로 두면 success 를 보기도 전에 NPE 가 난다.
+    val data: AccessTokenDto?,
     val success: Boolean,
     val code: String,
     val message: String
@@ -63,13 +64,14 @@ data class CheckUserStatusRequest(
 )
 
 data class CheckUserStatusResponse(
-    val data: StatusInfo,
+    val data: StatusInfo?,
     val success: Boolean,
     val code: String,
     val message: String
 ) {
     data class StatusInfo(
-        val status: Status,
+        // Gson 은 모르는 enum 값을 null 로 채운다. 서버가 상태를 새로 추가해도 터지지 않도록 널러블로 둔다.
+        val status: Status?,
         val lastLoginAt: String?,
         val withdrawnAt: String?
     )

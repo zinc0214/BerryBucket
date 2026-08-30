@@ -19,7 +19,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -55,8 +54,11 @@ import com.zinc.waver.ui.presentation.component.TitleIconType
 import com.zinc.waver.ui.presentation.component.TitleView
 import com.zinc.waver.ui.presentation.component.dialog.CommonDialogView
 import com.zinc.waver.ui.presentation.login.model.CreateProfileInfo
+import com.zinc.waver.ui.presentation.login.model.NicknameCheckState
 import com.zinc.waver.ui.util.dpToSp
 import com.zinc.waver.ui_common.R as CommonR
+
+private const val MAX_BIO_LENGTH = 30
 
 @Composable
 fun JoinCreateProfile2(
@@ -69,17 +71,14 @@ fun JoinCreateProfile2(
 
     val failJoinAsState by createUserViewModel.failJoin.observeAsState()
     val joinSucceedAsState by createUserViewModel.joinSucceed.observeAsState()
-    val isAlreadyUsedNickNameAsState by createUserViewModel.isAlreadyUsedNickName.observeAsState()
+    val checkState by createUserViewModel.nicknameCheckState
+        .observeAsState(NicknameCheckState.Idle)
 
-    var showErrorPopup by remember { mutableStateOf(false) }
+    // 1단계 검사를 통과한 뒤에도 가입 요청이 6001 로 막힐 수 있다(그 사이 선점).
+    val showErrorPopup = checkState.isDuplicatedFor(createProfileInfo.nickName)
+
     LaunchedEffect(joinSucceedAsState) {
         joinSucceedAsState?.let { isMyBuryUser -> goToMain(isMyBuryUser) }
-    }
-
-    LaunchedEffect(isAlreadyUsedNickNameAsState) {
-        if (isAlreadyUsedNickNameAsState == true) {
-            showErrorPopup = true
-        }
     }
 
     JoinCreateProfile2(
@@ -90,7 +89,8 @@ fun JoinCreateProfile2(
             createUserViewModel.join(
                 emailInfo = emailInfo,
                 nickName = createProfileInfo.nickName,
-                bio = bio,
+                // 한 줄 소개는 선택 입력이다. 비어 있으면 필드를 아예 보내지 않는다.
+                bio = bio.trim().ifBlank { null },
                 image = createProfileInfo.imgFile
             )
         }
@@ -163,7 +163,7 @@ private fun JoinCreateProfile2(
 
         ProfileBioEditView(
             nickName = createProfileInfo.nickName,
-            prevBioText = bioText,
+            bioText = bioText,
             isJoinFailed = isJoinFailed,
             bioTextChanged = {
                 bioText = it
@@ -180,8 +180,8 @@ private fun JoinCreateProfile2(
             color = Gray1,
             modifier = Modifier
                 .fillMaxWidth()
-                .background(color = if (bioText.isNotBlank()) Main4 else Gray5)
-                .clickable(bioText.isNotBlank()) {
+                .background(color = Main4)
+                .clickable {
                     goToJoin(bioText)
                 }
                 .padding(vertical = 18.dp)
@@ -214,17 +214,14 @@ private fun NicknameText(nickName: String, modifier: Modifier = Modifier) {
 @Composable
 private fun ProfileBioEditView(
     nickName: String,
-    prevBioText: String,
+    bioText: String,
     isJoinFailed: Boolean,
     bioTextChanged: (String) -> Unit
 ) {
 
-    var currentText by remember { mutableStateOf(prevBioText) }
-    var currentTextSize by remember { mutableIntStateOf(currentText.length) }
+    // 표시용 상태를 따로 두지 않는다. 따로 두면 화면에는 잘린 값이, 서버에는 원본이 가는 어긋남이 생긴다.
     val hintText = nickName + stringResource(CommonR.string.enterBioDesc)
     var isFocused by remember { mutableStateOf(false) }
-
-    val maxLength = 30
 
     Column(
         modifier = Modifier
@@ -239,7 +236,7 @@ private fun ProfileBioEditView(
             )
             Spacer(modifier = Modifier.weight(1f))
             MyText(
-                text = "($currentTextSize/30)",
+                text = "(${bioText.length}/$MAX_BIO_LENGTH)",
                 color = Gray5,
                 fontSize = dpToSp(dp = 12.dp)
             )
@@ -250,25 +247,18 @@ private fun ProfileBioEditView(
                 .padding(top = 16.dp)
                 .fillMaxWidth()
                 .onFocusChanged { isFocused = it.isFocused },
-            value = currentText,
+            value = bioText,
             singleLine = false,
             textStyle = TextStyle(
                 fontSize = dpToSp(dp = 20.dp),
                 color = Gray10
             ),
             onValueChange = { changeText ->
-                currentText = if (changeText.length > 30) {
-                    val lastIndex = changeText.lastIndex
-                    changeText.removeRange(maxLength - 1, lastIndex)
-                } else {
-                    changeText
-                }
-                currentTextSize = currentText.length
-                bioTextChanged(changeText)
+                bioTextChanged(changeText.take(MAX_BIO_LENGTH))
             },
             decorationBox = { innerTextField ->
                 Row {
-                    if (currentText.isEmpty() && !isFocused) {
+                    if (bioText.isEmpty() && !isFocused) {
                         MyText(
                             text = hintText,
                             color = Gray4,
@@ -319,7 +309,7 @@ private fun NicknameTextPreview() {
 private fun ProfileBioEditPreview() {
     ProfileBioEditView(
         nickName = "닉네임",
-        prevBioText = "d",
+        bioText = "d",
         isJoinFailed = true,
         bioTextChanged = {},
     )
