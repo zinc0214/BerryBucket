@@ -96,8 +96,11 @@ fun MyWaveManageScreen(
         onBackPressed()
     }
 
-    if (myWaveInfo.value == null) {
-        viewModel.loadMyWaveInfo()
+    // 컴포지션 본문에서 호출하면 리컴포지션마다 다시 요청한다.
+    LaunchedEffect(Unit) {
+        if (myWaveInfo.value == null) {
+            viewModel.loadMyWaveInfo()
+        }
     }
 
     myWaveInfo.value?.let { info ->

@@ -83,8 +83,11 @@ fun ProfileSettingScreen(
         initialValue = ModalBottomSheetValue.Hidden, skipHalfExpanded = true
     )
 
-    if (profileInfo.value == null) {
-        viewModel.loadMyProfile()
+    // 컴포지션 본문에서 호출하면 리컴포지션마다 다시 요청한다.
+    LaunchedEffect(Unit) {
+        if (profileInfo.value == null) {
+            viewModel.loadMyProfile()
+        }
     }
 
     val nickNameData = remember {

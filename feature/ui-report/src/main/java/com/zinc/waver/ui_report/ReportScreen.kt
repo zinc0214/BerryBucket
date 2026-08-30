@@ -42,7 +42,11 @@ fun ReportScreen(
     reportInfo: ReportInfo, backPress: () -> Unit, succeedReported: () -> Unit
 ) {
     val viewModel: ReportViewModel = hiltViewModel()
-    viewModel.loadReportItems()
+
+    // 컴포지션 본문에서 호출하면 리컴포지션마다 다시 요청한다.
+    LaunchedEffect(Unit) {
+        viewModel.loadReportItems()
+    }
 
     val reportItems by viewModel.reportItemList.observeAsState()
     val commentReportSucceedAsState by viewModel.commentReportSucceed.observeAsState()

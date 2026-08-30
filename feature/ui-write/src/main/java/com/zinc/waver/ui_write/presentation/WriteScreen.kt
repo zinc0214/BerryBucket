@@ -53,8 +53,11 @@ fun WriteScreen(
 
     var showAds by remember { mutableStateOf(false) }
 
-    if (originWriteTotalInfo.value == null) {
-        writeBucketListViewModel.getBucketDetailData(id.orEmpty())
+    // 컴포지션 본문에서 호출하면 리컴포지션마다 다시 요청한다.
+    LaunchedEffect(id) {
+        if (originWriteTotalInfo.value == null) {
+            writeBucketListViewModel.getBucketDetailData(id.orEmpty())
+        }
     }
 
     LaunchedEffect(key1 = savedWriteDataAsSate) {

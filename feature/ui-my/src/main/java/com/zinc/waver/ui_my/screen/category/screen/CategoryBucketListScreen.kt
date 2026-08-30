@@ -71,8 +71,11 @@ fun CategoryBucketListScreen(
         }
     }
 
-    if (bucketList.value.isNullOrEmpty()) {
-        viewModel.loadCategoryBucketList(categoryInfo.value.id)
+    // 컴포지션 본문에서 호출하면 리컴포지션마다 다시 요청한다.
+    LaunchedEffect(categoryInfo.value.id) {
+        if (bucketList.value.isNullOrEmpty()) {
+            viewModel.loadCategoryBucketList(categoryInfo.value.id)
+        }
     }
 
     bucketList.value?.let { data ->

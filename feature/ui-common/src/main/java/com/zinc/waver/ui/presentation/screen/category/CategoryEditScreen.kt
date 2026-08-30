@@ -42,8 +42,11 @@ fun CategoryEditScreen(
     val apiFailed by viewModel.loadFail.observeAsState()
     val reorderSucceed by viewModel.sortSucceed.observeAsState()
 
-    if (categoryList.isNullOrEmpty()) {
-        viewModel.loadCategoryList()
+    // 컴포지션 본문에서 호출하면 리컴포지션마다 다시 요청한다.
+    LaunchedEffect(Unit) {
+        if (categoryList.isNullOrEmpty()) {
+            viewModel.loadCategoryList()
+        }
     }
 
     val addNewCategoryDialogShowAvailable = remember { mutableStateOf(false) } // 카테고리 추가 팝업 노출 여부
@@ -53,6 +56,7 @@ fun CategoryEditScreen(
     val apiFailState = remember { mutableStateOf(apiFailed) }
     val categoryItemState = remember { mutableStateOf(categoryList) }
     val reorderSucceedState = remember { mutableStateOf(reorderSucceed) }
+    val reorderSucceedMessage = stringResource(R.string.categoryReorderSucceed)
 
     LaunchedEffect(categoryList) {
         categoryItemState.value = categoryList
@@ -116,11 +120,13 @@ fun CategoryEditScreen(
             })
     }
 
-    if (reorderSucceedState.value == true) {
-        Toast.makeText(context, stringResource(R.string.categoryReorderSucceed), Toast.LENGTH_SHORT)
-            .show()
-        viewModel.resetSortSucceed()
-        backClicked()
+    // 컴포지션 본문에 두면 조건이 참인 동안 리컴포지션마다 토스트가 뜨고 backClicked 가 반복 호출된다.
+    LaunchedEffect(reorderSucceedState.value) {
+        if (reorderSucceedState.value == true) {
+            Toast.makeText(context, reorderSucceedMessage, Toast.LENGTH_SHORT).show()
+            viewModel.resetSortSucceed()
+            backClicked()
+        }
     }
 
 
