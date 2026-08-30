@@ -56,13 +56,25 @@ class WriteBucketListViewModel @Inject constructor(
     private val _userLimitInfo = MutableLiveData<UserLimitInfo>()
     val userLimitInfo: LiveData<UserLimitInfo> get() = _userLimitInfo
 
+    // 기본 카테고리를 이미 받아왔는지. 실패하면 다시 false 로 되돌려 재시도를 허용한다.
+    private var isCategoryLoaded = false
+
     private val _defaultCategoryId = MutableLiveData<Int>()
 
     fun clearData() {
         _loadFail.value = null
     }
 
+    /**
+     * 기본 카테고리 id 를 받아둔다.
+     *
+     * 작성 1/2 단계가 이 뷰모델을 공유해 화면을 오갈 때마다 1단계가 다시 컴포지션되므로,
+     * 한 번 받아왔으면 건너뛴다. 작성 중 카테고리를 추가해도 기본 카테고리는 바뀌지 않는다.
+     */
     fun loadCategory() {
+        if (isCategoryLoaded) return
+        isCategoryLoaded = true
+
         viewModelScope.launch(ceh(_loadFail, "카테고리 로드 실패" to "다시 시도해주세요")) {
             val result = loadCategoryList.invoke()
             // data 가 논널로 선언돼 있어 success 를 보기 전에 건드리면 NPE 다.
@@ -70,6 +82,7 @@ class WriteBucketListViewModel @Inject constructor(
                 _defaultCategoryId.value =
                     result.data.firstOrNull { it.defaultYn == YesOrNo.Y }?.id
             } else {
+                isCategoryLoaded = false
                 _loadFail.value = "카테고리 로드 실패" to "다시 시도해주세요"
             }
         }
@@ -172,7 +185,16 @@ class WriteBucketListViewModel @Inject constructor(
         }
     }
 
-    fun checkUserLimit() {
+    /**
+     * 사용 한도를 조회한다.
+     *
+     * 작성 1/2 단계가 이 뷰모델을 공유하므로, 화면을 오갈 때마다 같은 값을 다시 받아오지 않도록
+     * 이미 받아둔 값이 있으면 건너뛴다. 구독 직후처럼 값이 바뀌었을 수 있는 경우에만
+     * [forceRefresh] 로 강제한다.
+     */
+    fun checkUserLimit(forceRefresh: Boolean = false) {
+        if (!forceRefresh && _userLimitInfo.value != null) return
+
         viewModelScope.launch(ceh(_userLimitInfo, UserLimitInfo.NONE)) {
             val response = checkUserLimitUseCase.invoke()
             _userLimitInfo.value = if (response.success) {

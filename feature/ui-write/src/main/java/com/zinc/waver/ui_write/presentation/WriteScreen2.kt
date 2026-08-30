@@ -87,8 +87,15 @@ fun WriteScreen2(
     var friendOption =
         remember { mutableStateOf(FRIENDS(enableType = getFriendsEnableType(canUseTogether))) }
 
-    LaunchedEffect(Unit, showWaverPlus.value) {
-        viewModel.checkUserLimit()
+    // 플러스 안내를 열 때는 조회하지 않는다. 닫고 돌아온 경우에만 다시 확인한다(구독하면 한도가 바뀐다).
+    var plusScreenShown by remember { mutableStateOf(false) }
+    LaunchedEffect(showWaverPlus.value) {
+        if (showWaverPlus.value) {
+            plusScreenShown = true
+        } else {
+            // 첫 진입이면 앞 단계에서 받아둔 값을 재사용한다.
+            viewModel.checkUserLimit(forceRefresh = plusScreenShown)
+        }
     }
 
     LaunchedEffect(originKeyWords) {

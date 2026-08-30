@@ -1,13 +1,10 @@
 package com.zinc.waver.ui.presentation
 
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.viewModelScope
 import com.zinc.datastore.login.PreferenceDataStoreModule
 import com.zinc.domain.models.BillingCycle
 import com.zinc.domain.models.SubscriptionStartRequest
-import com.zinc.domain.usecases.detail.LoadProfileInfo
-import com.zinc.domain.usecases.more.CheckUserLimit
 import com.zinc.domain.usecases.more.StartSubscription
 import com.zinc.waver.ui.viewmodel.CommonViewModel
 import com.zinc.waver.util.SingleLiveEvent
@@ -18,8 +15,6 @@ import javax.inject.Inject
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val preferenceDataStoreModule: PreferenceDataStoreModule,
-    private val loadProfileInfo: LoadProfileInfo,
-    private val checkUserLimitUseCase: CheckUserLimit,
     private val startSubscription: StartSubscription
 ) : CommonViewModel() {
     private val _logoutSucceed = SingleLiveEvent<Boolean>()
@@ -34,27 +29,6 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             preferenceDataStoreModule.clearLoginEmail()
             _logoutSucceed.value = true
-        }
-    }
-
-    // 로그인/앱 시작 시 로그인(프로필) 정보 로드 — 구독 여부 판단과는 무관하게 유지
-    fun loadProfileInfo() {
-        viewModelScope.launch(ceh(_doNothing, null)) {
-            // data 는 논널로 선언돼 있어 실패 응답에서 건드리면 NPE 다. success 를 먼저 본다.
-            val response = loadProfileInfo.invoke(true, null)
-            if (!response.success) {
-                Log.w("HomeViewModel", "loadProfileInfo 실패: code=${response.code}")
-            }
-        }
-    }
-
-    // 로그인/앱 시작 시 구독 상태 확인 (판단은 각 화면에서 API 호출로 수행)
-    fun checkUserLimit() {
-        viewModelScope.launch(ceh(_doNothing, null)) {
-            val response = checkUserLimitUseCase.invoke()
-            if (!response.success) {
-                Log.w("HomeViewModel", "checkUserLimit 실패: code=${response.code}")
-            }
         }
     }
 
