@@ -46,11 +46,12 @@ fun WriteSelectFriendsScreen(
     val viewModel: WriteBucketListViewModel = hiltViewModel()
     val searchFriendsResult by viewModel.searchFriendsResult.observeAsState()
 
-    // 이미 선택된 친구가 5명이 넘는 경우
-    val needShowAllFriendButton = remember { mutableStateOf(selectedFriends.size > 5) }
-
     // 최종 친구 목록
     var updateFriends by remember { mutableStateOf(selectedFriends) }
+
+    // 선택된 친구가 5명이 넘는 경우 일부만 노출
+    var isFriendsExpanded by remember { mutableStateOf(selectedFriends.size <= 5) }
+    val needShowAllFriendButton = !isFriendsExpanded && updateFriends.size > 5
 
     val scrollState = rememberLazyListState()
     val searchWord = remember { mutableStateOf("") }
@@ -62,8 +63,8 @@ fun WriteSelectFriendsScreen(
     ) {
         WriteAppBar(
             modifier = Modifier.fillMaxWidth(),
-            nextButtonClickable = updateFriends.isNotEmpty(),
-            rightText = R.string.addDesc,
+            nextButtonClickable = true,
+            rightText = R.string.saveDesc,
             clickEvent = {
                 when (it) {
                     WriteAppBarClickEvent.CloseClicked -> {
@@ -113,7 +114,7 @@ fun WriteSelectFriendsScreen(
                             verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             val list =
-                                if (needShowAllFriendButton.value) updateFriends.take(5) else updateFriends
+                                if (needShowAllFriendButton) updateFriends.take(5) else updateFriends
                             list.forEach {
                                 AddedFriendItem(
                                     writeFriend = it,
@@ -121,9 +122,9 @@ fun WriteSelectFriendsScreen(
                                         updateFriends = updateFriends - friend
                                     })
                             }
-                            if (needShowAllFriendButton.value) {
+                            if (needShowAllFriendButton) {
                                 ShowAllFriendItem(clicked = {
-                                    needShowAllFriendButton.value = false
+                                    isFriendsExpanded = true
                                 })
                             }
                         }

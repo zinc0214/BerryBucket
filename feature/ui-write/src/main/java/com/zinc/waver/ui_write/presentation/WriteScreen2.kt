@@ -176,6 +176,15 @@ fun WriteScreen2(
                                 R.string.optionIfFriendsNotEmptyOpenPrivateDetect,
                                 Toast.LENGTH_SHORT
                             ).show()
+                        } else if (selectedFriends.value.isNullOrEmpty() && selectedOpenType.value == WriteOpenType.FRIENDS_OPEN) {
+                            // 함께할 친구가 모두 삭제된 경우 친구공개 유지 불가
+                            selectedOpenType.value = WriteOpenType.PRIVATE
+                            isScrapUsed.value = false
+                            Toast.makeText(
+                                context,
+                                R.string.optionIfHasNoFriends,
+                                Toast.LENGTH_SHORT
+                            ).show()
                         }
                         optionScreenShow = null
                     }

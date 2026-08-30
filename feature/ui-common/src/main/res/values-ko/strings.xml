@@ -22,6 +22,7 @@
     <string name="nextButtonDesc">다음 버튼</string>
     <string name="deleteButtonDesc">삭제 버튼</string>
     <string name="addDesc">추가</string>
+    <string name="saveDesc">저장</string>
     <string name="confirm">확인</string>
     <string name="update">변경</string>
     <string name="searchHint">검색어를 입력해주세요.</string>

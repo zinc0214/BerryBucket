@@ -22,6 +22,7 @@
     <string name="nextButtonDesc">Next Button</string>
     <string name="deleteButtonDesc">Delete Button</string>
     <string name="addDesc">Add</string>
+    <string name="saveDesc">Save</string>
     <string name="confirm">OK</string>
     <string name="update">Update</string>
     <string name="searchHint">Please enter a search term.</string>
