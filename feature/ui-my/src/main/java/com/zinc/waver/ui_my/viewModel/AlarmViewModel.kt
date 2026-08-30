@@ -25,8 +25,13 @@ class AlarmViewModel @Inject constructor(
     fun loadAlarmList() {
         viewModelScope.launch(ceh(_alarmLoadFail, true)) {
             val response = loadAlarmList.invoke()
-            Log.e("ayhan ", "loadAlarmList: $response")
-            _alarmList.value = response.data.alarms
+            // data 가 논널로 선언돼 있어 success 를 보기 전에 건드리면 NPE 다.
+            if (response.success) {
+                _alarmList.value = response.data.alarms
+            } else {
+                Log.e("ayhan", "loadAlarmList 실패: code=${response.code}")
+                _alarmLoadFail.value = true
+            }
         }
     }
 }

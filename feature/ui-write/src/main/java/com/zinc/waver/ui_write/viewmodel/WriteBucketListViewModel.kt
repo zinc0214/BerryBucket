@@ -65,8 +65,13 @@ class WriteBucketListViewModel @Inject constructor(
     fun loadCategory() {
         viewModelScope.launch(ceh(_loadFail, "카테고리 로드 실패" to "다시 시도해주세요")) {
             val result = loadCategoryList.invoke()
-            _defaultCategoryId.value = result.data.firstOrNull { it.defaultYn == YesOrNo.Y }?.id
-            Log.e("ayhan", "category : $result")
+            // data 가 논널로 선언돼 있어 success 를 보기 전에 건드리면 NPE 다.
+            if (result.success) {
+                _defaultCategoryId.value =
+                    result.data.firstOrNull { it.defaultYn == YesOrNo.Y }?.id
+            } else {
+                _loadFail.value = "카테고리 로드 실패" to "다시 시도해주세요"
+            }
         }
     }
 

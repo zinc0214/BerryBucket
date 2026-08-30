@@ -152,9 +152,7 @@ class MyViewModel @Inject constructor(
     }
 
     fun loadProfile() {
-        viewModelScope.launch(CoroutineExceptionHandler { _, _ ->
-            _dataLoadFailed.value = false
-        }) {
+        viewModelScope.launch(ceh(_dataLoadFailed, true)) {
             val response = loadHomeProfileInfo.invoke()
             if (response.success) {
                 val data = response.data
@@ -175,8 +173,8 @@ class MyViewModel @Inject constructor(
                 _profileInfo.value = topProfile
                 _dataLoadFailed.value = false
             } else {
-                //  Log.e("ayhan", "Fail Load Profile not success")
-                _dataLoadFailed.value = false
+                Log.e("ayhan", "loadProfile 실패: code=${response.code}")
+                _dataLoadFailed.value = true
             }
         }
     }
