@@ -1,6 +1,5 @@
 package com.zinc.waver.ui_my.screen.dday
 
-import android.util.Log
 import android.widget.Toast
 import androidx.annotation.StringRes
 import androidx.compose.foundation.background
@@ -15,6 +14,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -38,7 +38,6 @@ fun MyDdayBucketFilterBottomScreen(
 
     val showMinusPref by viewModel.isShownMinusDday.observeAsState()
     val showPlusPref by viewModel.isShowPlusDday.observeAsState()
-    val filterSavedFinished by viewModel.ddayFilterSavedFinished.observeAsState()
 
     val minusBucketListSelectedState = remember {
         mutableStateOf(showMinusPref)
@@ -61,12 +60,10 @@ fun MyDdayBucketFilterBottomScreen(
         }
     })
 
-    LaunchedEffect(key1 = filterSavedFinished) {
-        if (filterSavedFinished == true) {
-            viewModel.clearFilterSavedStatus()
-            positiveEvent()
-            Log.e("ayhan", "filterSavedFinished")
-        }
+    // 시트가 계속 컴포즈되어 있으므로 최신 콜백을 참조하도록 한다.
+    val onSaved by rememberUpdatedState(positiveEvent)
+    LaunchedEffect(Unit) {
+        viewModel.ddayFilterSaved.collect { onSaved() }
     }
 
     Column(

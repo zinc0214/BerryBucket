@@ -1,6 +1,5 @@
 package com.zinc.waver.ui_my.screen.dday
 
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -34,55 +33,23 @@ import com.zinc.waver.ui_my.viewModel.MyViewModel
 fun DdayBucketLayer(
     modifier: Modifier,
     viewModel: MyViewModel,
-    clickEvent: (MyPagerClickEvent) -> Unit,
-    _isFilterUpdated: Boolean
+    clickEvent: (MyPagerClickEvent) -> Unit
 ) {
 
     val dDayBucketListAsState by viewModel.ddayBucketList.observeAsState()
-    val isNeedToUpdate by viewModel.isNeedToUpdate.observeAsState()
-    val filterLoadFinishedAsState by viewModel.ddayFilterLoadFinished.observeAsState()
 
     val bucketInfo = remember {
         mutableStateOf(dDayBucketListAsState)
     }
-    val isFilterUpdated = remember {
-        mutableStateOf(_isFilterUpdated)
-    }
 
+    // 화면 진입 시 필터 로드 -> 목록 조회가 한 번에 처리된다.
     LaunchedEffect(Unit) {
-        viewModel.needToReload(true)
+        viewModel.refreshDdayBucketList()
     }
-
-    LaunchedEffect(key1 = isNeedToUpdate, block = {
-        Log.e("ayhan", "isNeedToUpdate : ${isNeedToUpdate}")
-
-        if (isNeedToUpdate == true) {
-            viewModel.needToReload(false)
-            viewModel.loadDdayBucketFilter()
-            isFilterUpdated.value = false
-            // 값 초기화
-        }
-    })
 
     LaunchedEffect(key1 = dDayBucketListAsState, block = {
         bucketInfo.value = dDayBucketListAsState
     })
-
-    LaunchedEffect(key1 = filterLoadFinishedAsState) {
-        Log.e("ayhan", "filterLoadFinishedAsState : $filterLoadFinishedAsState")
-        if (filterLoadFinishedAsState == true) {
-            viewModel.loadDdayBucketList()
-            // isFilterDialogShown.value = false
-        }
-    }
-
-    if (isFilterUpdated.value != _isFilterUpdated) {
-        isFilterUpdated.value = _isFilterUpdated
-        if (isFilterUpdated.value) {
-            viewModel.loadDdayBucketFilter()
-            Log.e("ayhan", "isFilterUpdated")
-        }
-    }
 
     bucketInfo.value?.let {
         Column(modifier = modifier.background(Gray2)) {

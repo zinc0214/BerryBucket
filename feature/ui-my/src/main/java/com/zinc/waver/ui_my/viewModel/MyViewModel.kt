@@ -30,8 +30,10 @@ import com.zinc.waver.ui.viewmodel.CommonViewModel
 import com.zinc.waver.util.SingleLiveEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineExceptionHandler
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.joinAll
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -74,9 +76,6 @@ class MyViewModel @Inject constructor(
     private val _showDdayView = MutableLiveData<Boolean>()
     val showDdayView: LiveData<Boolean> get() = _showDdayView
 
-    private val _isNeedToUpdate = MutableLiveData<Boolean>()
-    val isNeedToUpdate: LiveData<Boolean> get() = _isNeedToUpdate
-
     private val _isShowPlusDday = MutableLiveData<Boolean>()
     val isShowPlusDday: LiveData<Boolean> get() = _isShowPlusDday
 
@@ -95,19 +94,12 @@ class MyViewModel @Inject constructor(
     private val _achieveSucceed = MutableLiveData<String>()
     val achieveSucceed: LiveData<String> get() = _achieveSucceed
 
-    private val _allFilterLoadFinished = MutableLiveData<Boolean>()
-    val allFilterLoadFinished: LiveData<Boolean> get() = _allFilterLoadFinished
+    // 필터 저장 완료 이벤트. 값을 보관하지 않으므로 리컴포지션에서 재발행되지 않는다.
+    private val _allFilterSaved = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
+    val allFilterSaved: SharedFlow<Unit> = _allFilterSaved.asSharedFlow()
 
-    private val _ddayFilterLoadFinished = MutableLiveData<Boolean>()
-    val ddayFilterLoadFinished: LiveData<Boolean> get() = _ddayFilterLoadFinished
-
-    private val _allFilterSavedFinished = MutableLiveData<Boolean>()
-    val allFilterSavedFinished: LiveData<Boolean> get() = _allFilterSavedFinished
-
-    private val _ddayFilterSavedFinished = MutableLiveData<Boolean>()
-    val ddayFilterSavedFinished: LiveData<Boolean> get() = _ddayFilterSavedFinished
-
-    private var isPrefChanged = false
+    private val _ddayFilterSaved = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
+    val ddayFilterSaved: SharedFlow<Unit> = _ddayFilterSaved.asSharedFlow()
 
     private val searchCeh = CoroutineExceptionHandler { _, throwable ->
         Log.e("ayhan", "searchFail 1 : $throwable")
@@ -119,93 +111,44 @@ class MyViewModel @Inject constructor(
             liveData.call()
         }
 
-    fun loadAllBucketFilter() {
+    /**
+     * 저장된 필터를 먼저 읽어온 뒤 전체 버킷리스트를 조회한다.
+     * 필터 로드와 목록 조회를 하나의 코루틴에서 순차 실행하므로,
+     * 필터가 아직 없는 상태로 목록을 요청하는 일이 발생하지 않는다.
+     */
+    fun refreshAllBucketList() {
         viewModelScope.launch(ceh(_dataLoadFailed, true)) {
-            val job1 = launch { loadShowProgressDataStore() }
-            val job2 = launch { loadShowSucceedDataStore() }
-            val job3 = launch { loadOrderTypeDataStore() }
-            val job4 = launch { loadShowDdayDataStore() }
-            val job5 = launch {
-                _allFilterLoadFinished.value = true
-            }
-            joinAll(job1, job2, job3, job4, job5)
-            _dataLoadFailed.value = false
-        }
-        _isNeedToUpdate.value = false
-    }
-
-    fun loadDdayBucketFilter() {
-        viewModelScope.launch {
-            val job1 = launch { loadFilerDdayMinusDataStore() }
-            val job2 = launch { loadFilerDdayPlusDataStore() }
-            val job3 = launch {
-                _ddayFilterLoadFinished.value = true
-            }
-
-            joinAll(job1, job2, job3)
+            loadAllFilterPref()
+            fetchAllBucketList()
         }
     }
 
-    private suspend fun loadShowProgressDataStore() {
+    /**
+     * 저장된 필터를 먼저 읽어온 뒤 디데이 버킷리스트를 조회한다.
+     * 정렬은 전체 탭 필터를 사용하므로 함께 읽어온다.
+     */
+    fun refreshDdayBucketList() {
+        viewModelScope.launch(ceh(_dataLoadFailed, true)) {
+            loadAllFilterPref()
+            loadDdayFilterPref()
+            fetchDdayBucketList()
+        }
+    }
+
+    private suspend fun loadAllFilterPref() {
         filterPreferenceDataStoreModule.apply {
-            loadIsProgress.collectLatest {
-                isPrefChanged = isPrefChanged || _showProgress.value != it
-                _showProgress.value = it
-                Log.e("ayhan", "loadShowProgressDataStore")
-            }
+            _showProgress.value = loadIsProgress.first()
+            _showSucceed.value = loadIsSucceed.first()
+            _orderType.value = loadOrderType.first()
+            _showDdayView.value = loadShowDday.first()
         }
     }
 
-    private suspend fun loadShowSucceedDataStore() {
+    private suspend fun loadDdayFilterPref() {
         filterPreferenceDataStoreModule.apply {
-            loadIsSucceed.collectLatest {
-                isPrefChanged = isPrefChanged || _showSucceed.value != it
-                _showSucceed.value = it
-                Log.e("ayhan", "loadShowSucceedDataStore")
-            }
+            _isShownMinusDday.value = loadIsDdayMinus.first()
+            _isShowPlusDday.value = loadIsDdayPlus.first()
         }
-    }
-
-    private suspend fun loadOrderTypeDataStore() {
-        filterPreferenceDataStoreModule.apply {
-            loadOrderType.collectLatest {
-                isPrefChanged = isPrefChanged || _orderType.value != it
-                _orderType.value = it
-                Log.e("ayhan", "loadOrderTypeDataStore")
-            }
-        }
-    }
-
-    private suspend fun loadShowDdayDataStore() {
-        filterPreferenceDataStoreModule.apply {
-            loadShowDday.collectLatest {
-                isPrefChanged = isPrefChanged || _showDdayView.value != it
-                _showDdayView.value = it
-                Log.e("ayhan", "loadShowDdayDataStore")
-            }
-        }
-    }
-
-    private suspend fun loadFilerDdayMinusDataStore() {
-        filterPreferenceDataStoreModule.apply {
-            loadIsDdayMinus.collectLatest {
-                isPrefChanged = isPrefChanged || _isShownMinusDday.value != it
-                _isShownMinusDday.value = it
-            }
-        }
-    }
-
-    private suspend fun loadFilerDdayPlusDataStore() {
-        filterPreferenceDataStoreModule.apply {
-            loadIsDdayPlus.collectLatest {
-                isPrefChanged = isPrefChanged || _isShowPlusDday.value != it
-                _isShowPlusDday.value = it
-            }
-        }
-    }
-
-    fun needToReload(isNeed: Boolean) {
-        _isNeedToUpdate.value = isNeed
     }
 
     fun loadProfile() {
@@ -238,7 +181,15 @@ class MyViewModel @Inject constructor(
         }
     }
 
-    fun loadAllBucketList(status: BucketStatus? = null) {
+    /** 진행중/완료 상태별 목록 화면 진입용. 정렬 필터가 필요하므로 필터를 먼저 읽는다. */
+    fun loadStatusBucketList(status: BucketStatus) {
+        viewModelScope.launch(ceh(_dataLoadFailed, true)) {
+            loadAllFilterPref()
+            fetchAllBucketList(status)
+        }
+    }
+
+    private suspend fun fetchAllBucketList(status: BucketStatus? = null) {
         val allBucketListRequest = AllBucketListRequest(
             dDayBucketOnly = null,
             isPassed = null,
@@ -246,28 +197,19 @@ class MyViewModel @Inject constructor(
             sort = loadSortFilter()
         )
 
-        Log.e("ayhan", "allBucketListRequest : ${allBucketListRequest}")
+        Log.e("ayhan", "allBucketListRequest : $allBucketListRequest")
 
-        viewModelScope.launch(ceh(_dataLoadFailed, true)) {
-            _dataLoadFailed.value = false
-
-            loadAllBucketList.invoke(allBucketListRequest).apply {
-
-                Log.e("ayhan", "allBucketListRequest2 : $this")
-
-                if (this.success) {
-                    val data = this.data
-                    Log.e("ayhan", "allBucketList : $this")
-                    val uiALlBucketType = AllBucketList(
-                        processingCount = data.progressCount.toString(),
-                        succeedCount = data.completedCount.toString(),
-                        bucketList = data.bucketlist.parseToUI()
-                    )
-                    _allBucketItem.value = uiALlBucketType
-                    _allFilterLoadFinished.value = false
-                } else {
-                    _dataLoadFailed.value = true
-                }
+        loadAllBucketList.invoke(allBucketListRequest).apply {
+            if (this.success) {
+                val data = this.data
+                _allBucketItem.value = AllBucketList(
+                    processingCount = data.progressCount.toString(),
+                    succeedCount = data.completedCount.toString(),
+                    bucketList = data.bucketlist.parseToUI()
+                )
+                _dataLoadFailed.value = false
+            } else {
+                _dataLoadFailed.value = true
             }
         }
     }
@@ -281,7 +223,7 @@ class MyViewModel @Inject constructor(
     private fun loadSortFilter() =
         if (_orderType.value == 1) AllBucketListSortType.CREATED else AllBucketListSortType.UPDATED
 
-    fun loadDdayBucketList() {
+    private suspend fun fetchDdayBucketList() {
         val isPassed = if (isShowPlusDday.value == true && isShownMinusDday.value == true) {
             null
         } else if (isShowPlusDday.value == true) {
@@ -299,32 +241,30 @@ class MyViewModel @Inject constructor(
             sort = loadSortFilter()
         )
 
-        viewModelScope.launch(CoroutineExceptionHandler { _, _ ->
-            _dataLoadFailed.value = false
-        }) {
-            loadAllBucketList.invoke(allBucketListRequest).apply {
-                if (this.success) {
-                    val data = this.data
-                    val uiAllBucketList = AllBucketList(
-                        processingCount = data.progressCount.toString(),
-                        succeedCount = data.completedCount.toString(),
-                        bucketList = data.bucketlist.parseToUI()
-                    )
+        loadAllBucketList.invoke(allBucketListRequest).apply {
+            if (this.success) {
+                val data = this.data
+                val uiAllBucketList = AllBucketList(
+                    processingCount = data.progressCount.toString(),
+                    succeedCount = data.completedCount.toString(),
+                    bucketList = data.bucketlist.parseToUI()
+                )
 
-                    val filteredList =
-                        if (_isShownMinusDday.value == true && _isShowPlusDday.value == true) {
-                            uiAllBucketList.bucketList
-                        } else if (_isShowPlusDday.value == true) {
-                            uiAllBucketList.bucketList.filter { it.getDdayType() == DdaySortType.PLUS || it.getDdayType() == DdaySortType.D_DAY }
-                        } else if (_isShownMinusDday.value == true) {
-                            uiAllBucketList.bucketList.filter { it.getDdayType() == DdaySortType.MINUS }
-                        } else {
-                            uiAllBucketList.bucketList
-                        }
+                val filteredList =
+                    if (_isShownMinusDday.value == true && _isShowPlusDday.value == true) {
+                        uiAllBucketList.bucketList
+                    } else if (_isShowPlusDday.value == true) {
+                        uiAllBucketList.bucketList.filter { it.getDdayType() == DdaySortType.PLUS || it.getDdayType() == DdaySortType.D_DAY }
+                    } else if (_isShownMinusDday.value == true) {
+                        uiAllBucketList.bucketList.filter { it.getDdayType() == DdaySortType.MINUS }
+                    } else {
+                        uiAllBucketList.bucketList
+                    }
 
-                    _ddayBucketList.value = uiAllBucketList.copy(bucketList = filteredList)
-                    _ddayFilterLoadFinished.value = false
-                }
+                _ddayBucketList.value = uiAllBucketList.copy(bucketList = filteredList)
+                _dataLoadFailed.value = false
+            } else {
+                _dataLoadFailed.value = true
             }
         }
     }
@@ -347,7 +287,7 @@ class MyViewModel @Inject constructor(
         orderType: Int?,
         showDday: Boolean?
     ) {
-        viewModelScope.launch {
+        viewModelScope.launch(ceh(_dataLoadFailed, true)) {
             filterPreferenceDataStoreModule.apply {
                 isProgress?.let {
                     setProgress(isProgress)
@@ -367,12 +307,8 @@ class MyViewModel @Inject constructor(
                 }
             }
 
-            Log.e(
-                "ayhan",
-                "status check2 : ${_showProgress.value} , ${_showSucceed.value}, ${_showDdayView.value}"
-            )
-            _allFilterSavedFinished.value = true
-            _isNeedToUpdate.value = true
+            _allFilterSaved.tryEmit(Unit)
+            fetchAllBucketList()
         }
     }
 
@@ -380,7 +316,7 @@ class MyViewModel @Inject constructor(
         isMinusShow: Boolean?,
         isPlusShow: Boolean?
     ) {
-        viewModelScope.launch {
+        viewModelScope.launch(ceh(_dataLoadFailed, true)) {
             filterPreferenceDataStoreModule.apply {
                 isMinusShow?.let {
                     Log.e("ayhan", "minus :  $it")
@@ -393,14 +329,9 @@ class MyViewModel @Inject constructor(
                     _isShowPlusDday.value = it
                 }
             }
-            _ddayFilterSavedFinished.value = true
-            _isNeedToUpdate.value = true
+            _ddayFilterSaved.tryEmit(Unit)
+            fetchDdayBucketList()
         }
-    }
-
-    fun clearFilterSavedStatus() {
-        _allFilterSavedFinished.value = false
-        _ddayFilterSavedFinished.value = false
     }
 
     private fun searchAllBucket(searchWord: String) {
@@ -459,8 +390,8 @@ class MyViewModel @Inject constructor(
             Log.e("ayhan", "Achieve Response : $response")
             if (response.success) {
                 when (type) {
-                    is ALL -> loadAllBucketList()
-                    is DDAY -> loadDdayBucketList()
+                    is ALL -> fetchAllBucketList()
+                    is DDAY -> fetchDdayBucketList()
                     else -> {
                         // Do Nothing
                     }

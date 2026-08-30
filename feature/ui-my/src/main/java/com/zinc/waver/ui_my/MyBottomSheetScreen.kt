@@ -22,29 +22,23 @@ fun SearchBottomView(
 fun FilterBottomView(
     tab: MyTabType,
     viewModel: MyViewModel,
-    isNeedToUpdated: (Boolean) -> Unit
+    onFilterSaved: () -> Unit
 ) {
     when (tab) {
         is MyTabType.ALL -> {
             MyAllBucketFilterBottomScreen(
                 viewModel = viewModel,
-                negativeEvent = {
-                    isNeedToUpdated.invoke(false)
-                },
-                positiveEvent = {
-                    isNeedToUpdated.invoke(true)
-                })
+                negativeEvent = onFilterSaved,
+                positiveEvent = onFilterSaved
+            )
         }
 
         is MyTabType.DDAY -> {
             MyDdayBucketFilterBottomScreen(
                 viewModel = viewModel,
-                negativeEvent = {
-                    isNeedToUpdated.invoke(false)
-                },
-                positiveEvent = {
-                    isNeedToUpdated.invoke(true)
-                })
+                negativeEvent = onFilterSaved,
+                positiveEvent = onFilterSaved
+            )
         }
 
         is MyTabType.CHALLENGE -> TODO()

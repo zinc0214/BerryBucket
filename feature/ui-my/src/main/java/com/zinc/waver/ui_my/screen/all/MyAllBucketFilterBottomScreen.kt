@@ -16,6 +16,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -43,8 +44,6 @@ fun MyAllBucketFilterBottomScreen(
     val showSucceedPref by viewModel.showSucceed.observeAsState()
     val orderTypePref by viewModel.orderType.observeAsState()
     val showDdayPref by viewModel.showDdayView.observeAsState()
-
-    val filterSavedFinished by viewModel.allFilterSavedFinished.observeAsState()
 
     val proceedingBucketListSelectedState = remember {
         mutableStateOf(showProgressPref)
@@ -87,12 +86,10 @@ fun MyAllBucketFilterBottomScreen(
         }
     })
 
-    LaunchedEffect(key1 = filterSavedFinished) {
-        if (filterSavedFinished == true) {
-            viewModel.clearFilterSavedStatus()
-            positiveEvent()
-            Log.e("ayhan", "filterSavedFinished")
-        }
+    // 시트가 계속 컴포즈되어 있으므로 최신 콜백을 참조하도록 한다.
+    val onSaved by rememberUpdatedState(positiveEvent)
+    LaunchedEffect(Unit) {
+        viewModel.allFilterSaved.collect { onSaved() }
     }
 
     Column(

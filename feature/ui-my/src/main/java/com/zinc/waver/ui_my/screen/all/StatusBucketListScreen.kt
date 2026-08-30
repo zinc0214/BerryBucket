@@ -48,7 +48,7 @@ fun StatusBucketListScreen(
         if (status == BucketStatus.PROGRESS) CommonR.string.proceedingText else CommonR.string.succeedText
 
     LaunchedEffect(Unit) {
-        viewModel.loadAllBucketList(status = status)
+        viewModel.loadStatusBucketList(status = status)
     }
 
     LaunchedEffect(bucketListAsState) {

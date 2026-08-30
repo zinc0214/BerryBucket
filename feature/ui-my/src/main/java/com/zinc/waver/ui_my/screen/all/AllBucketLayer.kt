@@ -1,6 +1,5 @@
 package com.zinc.waver.ui_my.screen.all
 
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -52,57 +51,26 @@ import com.zinc.waver.ui_my.viewModel.MyViewModel
 fun AllBucketLayer(
     modifier: Modifier,
     viewModel: MyViewModel,
-    clickEvent: (MyPagerClickEvent) -> Unit,
-    _isFilterUpdated: Boolean
+    clickEvent: (MyPagerClickEvent) -> Unit
 ) {
 
     val allBucketInfoAsState by viewModel.allBucketItem.observeAsState()
     val ddayShowPrefAsState by viewModel.showDdayView.observeAsState()
-    val isNeedToUpdate by viewModel.isNeedToUpdate.observeAsState()
-    val filterLoadFinishedAsState by viewModel.allFilterLoadFinished.observeAsState()
 
     val bucketInfo = allBucketInfoAsState
     val ddayShow = remember {
         mutableStateOf(ddayShowPrefAsState)
     }
-    val isFilterUpdated = remember {
-        mutableStateOf(_isFilterUpdated)
-    }
 
+    // 화면 진입 시 필터 로드 -> 목록 조회가 한 번에 처리된다.
+    // 필터 변경 시의 재조회는 ViewModel 이 직접 수행하므로 별도 트리거가 필요 없다.
     LaunchedEffect(Unit) {
-        viewModel.needToReload(true)
+        viewModel.refreshAllBucketList()
     }
 
-    LaunchedEffect(key1 = filterLoadFinishedAsState) {
-        Log.e("ayhan", "filterLoadFinishedAsState : $filterLoadFinishedAsState")
-        if (filterLoadFinishedAsState == true) {
-            viewModel.loadAllBucketList()
-            // isFilterDialogShown.value = false
-        }
-    }
     LaunchedEffect(key1 = ddayShowPrefAsState, block = {
         ddayShow.value = ddayShowPrefAsState
     })
-
-
-    LaunchedEffect(key1 = isNeedToUpdate, block = {
-        Log.e("ayhan", "isNeedToUpdate : $isNeedToUpdate")
-
-        if (isNeedToUpdate == true) {
-            viewModel.loadAllBucketFilter()
-            isFilterUpdated.value = false
-            // 값 초기화
-        }
-    })
-
-    if (isFilterUpdated.value != _isFilterUpdated) {
-        isFilterUpdated.value = _isFilterUpdated
-        if (isFilterUpdated.value) {
-            viewModel.loadAllBucketFilter()
-            // viewModel.loadAllBucketList()
-            Log.e("ayhan", "isFilterUpdated")
-        }
-    }
 
     Column(modifier.background(Gray2)) {
         if (bucketInfo == null) {
@@ -111,13 +79,7 @@ fun AllBucketLayer(
             AllBucketTopView(
                 modifier = Modifier,
                 allBucketInfo = bucketInfo!!,
-                clickEvent = { event ->
-                    clickEvent(event)
-
-                    if (event is MyPagerClickEvent.BottomSheet.FilterClicked) {
-                        isFilterUpdated.value = false
-                    }
-                }
+                clickEvent = clickEvent
             )
             Spacer(modifier = Modifier.height(16.dp))
         }

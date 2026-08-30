@@ -124,9 +124,6 @@ fun MyScreen(
     ////////////////////////////
     ////BottomSheet////////////
     ///////////////////////////
-    val isFilterUpdated = remember {
-        mutableStateOf(false)
-    }
     val myTabType = remember {
         mutableIntStateOf(0)
     }
@@ -196,9 +193,8 @@ fun MyScreen(
                 FilterBottomView(
                     tab = if (myTabType.intValue == 0) ALL else DDAY,
                     viewModel = viewModel,
-                    isNeedToUpdated = {
+                    onFilterSaved = {
                         isNeedToBottomSheetOpen.invoke(false)
-                        isFilterUpdated.value = it
                     }
                 )
             }
@@ -233,7 +229,6 @@ fun MyScreen(
                         .height((viewportHeight - tabHeight).coerceAtLeast(0.dp)),
                     pagerState = pagerState,
                     viewModel = viewModel,
-                    isFilterUpdated = isFilterUpdated.value,
                     itemSelected = itemSelected,
                     bottomSheetClicked = {
                         bottomSheetClicked(it)
@@ -241,7 +236,6 @@ fun MyScreen(
                         if (it is BottomSheetScreenType.MyBucketFilterScreen) {
                             myTabType.intValue = pagerState.currentPage
                             isNeedToBottomSheetOpen.invoke(it.needToShown)
-                            isFilterUpdated.value = false
                         }
                     },
                     goToCategoryEdit = goToCategoryEdit,
@@ -295,7 +289,6 @@ fun MyViewPager(
     pagerState: PagerState,
     viewModel: MyViewModel,
     coroutineScope: CoroutineScope,
-    isFilterUpdated: Boolean,
     itemSelected: (HomeItemSelected) -> Unit,
     bottomSheetClicked: (BottomSheetScreenType) -> Unit,
     goToCategoryEdit: () -> Unit,
@@ -313,7 +306,6 @@ fun MyViewPager(
                     AllBucketLayer(
                         modifier = modifier,
                         viewModel = viewModel,
-                        _isFilterUpdated = isFilterUpdated,
                         clickEvent = {
                             when (it) {
                                 is MyPagerClickEvent.GoTo.BucketItemClicked -> {
@@ -394,7 +386,6 @@ fun MyViewPager(
                     DdayBucketLayer(
                         modifier = modifier,
                         viewModel = viewModel,
-                        _isFilterUpdated = isFilterUpdated,
                         clickEvent = {
                             when (it) {
                                 is MyPagerClickEvent.GoTo.BucketItemClicked -> {
