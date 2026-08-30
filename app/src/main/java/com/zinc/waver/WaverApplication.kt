@@ -14,11 +14,9 @@ class WaverApplication : Application() {
         // Firebase 초기화
         try {
             // Firebase Messaging 토큰 얻기
+            // 토큰 값은 로그로 남기지 않는다. 서버 등록은 FcmTokenRegister 가 담당한다.
             Firebase.messaging.token.addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    val token = task.result
-                    Log.d("FCM_INIT", "FCM Token: $token")
-                } else {
+                if (!task.isSuccessful) {
                     Log.e("FCM_INIT", "Failed to get FCM token", task.exception)
                 }
             }

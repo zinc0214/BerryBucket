@@ -11,6 +11,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.Divider
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
@@ -39,7 +40,11 @@ fun CategorySelectBottomScreen(
 ) {
     val viewModel: WriteCategoryViewModel = hiltViewModel()
     val categoryList by viewModel.categoryInfoList.observeAsState()
-    viewModel.loadCategoryList()
+
+    // 컴포지션 본문에서 호출하면 리컴포지션마다 다시 요청한다.
+    LaunchedEffect(Unit) {
+        viewModel.loadCategoryList()
+    }
 
     categoryList?.let {
         CategorySelectView(it,

@@ -40,8 +40,11 @@ class HomeViewModel @Inject constructor(
     // 로그인/앱 시작 시 로그인(프로필) 정보 로드 — 구독 여부 판단과는 무관하게 유지
     fun loadProfileInfo() {
         viewModelScope.launch(ceh(_doNothing, null)) {
+            // data 는 논널로 선언돼 있어 실패 응답에서 건드리면 NPE 다. success 를 먼저 본다.
             val response = loadProfileInfo.invoke(true, null)
-            Log.d("HomeViewModel", "loadProfileInfo: ${response.data}")
+            if (!response.success) {
+                Log.w("HomeViewModel", "loadProfileInfo 실패: code=${response.code}")
+            }
         }
     }
 
@@ -49,7 +52,9 @@ class HomeViewModel @Inject constructor(
     fun checkUserLimit() {
         viewModelScope.launch(ceh(_doNothing, null)) {
             val response = checkUserLimitUseCase.invoke()
-            Log.d("HomeViewModel", "checkUserLimit: ${response.data}")
+            if (!response.success) {
+                Log.w("HomeViewModel", "checkUserLimit 실패: code=${response.code}")
+            }
         }
     }
 

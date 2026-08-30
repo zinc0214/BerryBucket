@@ -26,8 +26,6 @@ import androidx.core.net.toUri
 import com.canhub.cropper.CropImageOptions
 import com.canhub.cropper.CropImageView
 import com.google.android.gms.ads.MobileAds
-import com.google.android.gms.tasks.OnCompleteListener
-import com.google.firebase.messaging.FirebaseMessaging
 import com.zinc.domain.models.BillingCycle
 import com.zinc.waver.R
 import com.zinc.waver.model.AddImageType
@@ -102,19 +100,6 @@ class HomeActivity : AppCompatActivity(),
         viewModel.checkUserLimit()
 
         requestNotificationPermission()
-
-        FirebaseMessaging.getInstance().token.addOnCompleteListener(OnCompleteListener { task ->
-            if (!task.isSuccessful) {
-                Log.w("FCM_TOKEN", "Fetching FCM registration token failed", task.exception)
-                return@OnCompleteListener
-            }
-
-            // Get new FCM registration token
-            val token = task.result
-
-            // Log and toast
-            Log.d("FCM_TOKEN", "FCM Token: $token")
-        })
 
         setContent {
             enableEdgeToEdge()
